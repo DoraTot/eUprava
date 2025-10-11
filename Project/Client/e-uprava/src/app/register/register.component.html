@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="../login-patient/login-patient.component.css">
+</head>
+<body>
+<div class="login-container">
+  <h2>Register</h2>
+  <form action="#" method="post">
+    <div class="input-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required>
+    </div>
+    <div class="input-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <div class="input-group">
+      <label for="username">First name</label>
+      <input type="text" id="fname" name="fname" required>
+    </div>
+    <div class="input-group">
+      <label for="username">Last name</label>
+      <input type="text" id="lname" name="lname" required>
+    </div>
+    <div class="input-group">
+      <label for="usertype">Create account as:</label>
+      <input type="text" id="usertype" list="usertypes">
+
+      <datalist id="usertypes">
+        <option value="Patient"></option>
+        <option value="Doctor"></option>
+        <option value="Educator"></option>
+      </datalist>
+    </div>
+    <button type="submit">Login</button>
+    <a routerLink="/login-doctor">Login as doctor</a><br>
+    <a routerLink="/login-patient">Login as patient</a><br>
+
+  </form>
+</div>
+</body>
+</html>

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginPatientComponent } from './login-patient/login-patient.component';
 import { LoginDoctorComponent } from './login-doctor/login-doctor.component';
+import {RegisterComponent} from "./register/register.component";
 
 // const routes: Routes = [];
 
@@ -15,6 +16,7 @@ import { LoginDoctorComponent } from './login-doctor/login-doctor.component';
 export const routes: Routes = [
   { path: 'login-patient', component: LoginPatientComponent },
   { path: 'login-doctor', component: LoginDoctorComponent },
+  { path: 'register', component: RegisterComponent },
 
   { path: '', redirectTo: '/login-patient', pathMatch: 'full' },
 ];

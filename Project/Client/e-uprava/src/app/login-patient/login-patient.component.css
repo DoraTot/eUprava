@@ -48,6 +48,11 @@ body {
   border-radius: 4px;
 }
 
+input[list] {
+  padding: 6px;
+  width: 200px;
+}
+
 button {
   width: 100%;
   padding: 12px;
