@@ -9,16 +9,18 @@ services:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASS=secret
-      - DB_NAME=mydb
+      - DB_NAME=e_uprava
 
   db:
     image: mysql:8
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: mydb
+      MYSQL_DATABASE: e_uprava
     ports:
       - "3306:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   angular-app:
     build:

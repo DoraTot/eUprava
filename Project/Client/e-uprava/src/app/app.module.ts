@@ -6,6 +6,8 @@ import { AppComponent } from './app.component';
 import { LoginPatientComponent } from './login-patient/login-patient.component';
 import { LoginDoctorComponent } from './login-doctor/login-doctor.component';
 import { RegisterComponent } from './register/register.component';
+import {ReactiveFormsModule} from '@angular/forms';
+import {HttpClientModule} from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -16,7 +18,10 @@ import { RegisterComponent } from './register/register.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ReactiveFormsModule,
+    HttpClientModule,
+
   ],
   providers: [],
   bootstrap: [AppComponent]

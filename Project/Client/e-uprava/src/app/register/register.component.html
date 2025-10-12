@@ -8,26 +8,26 @@
 <body>
 <div class="login-container">
   <h2>Register</h2>
-  <form action="#" method="post">
+  <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
     <div class="input-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" name="username" required>
+      <label for="username">Email:</label>
+      <input type="text" id="username" formControlName="username" name="username" required>
     </div>
     <div class="input-group">
       <label for="password">Password</label>
-      <input type="password" id="password" name="password" required>
+      <input type="password" id="password" formControlName="password" name="password" required>
     </div>
     <div class="input-group">
       <label for="username">First name</label>
-      <input type="text" id="fname" name="fname" required>
+      <input type="text" id="fname" formControlName="fname" name="fname" required>
     </div>
     <div class="input-group">
       <label for="username">Last name</label>
-      <input type="text" id="lname" name="lname" required>
+      <input type="text" id="lname" formControlName="lname" name="lname" required>
     </div>
     <div class="input-group">
       <label for="usertype">Create account as:</label>
-      <input type="text" id="usertype" list="usertypes">
+      <input type="text" id="usertype" list="usertypes" formControlName="usertype">
 
       <datalist id="usertypes">
         <option value="Patient"></option>
@@ -35,7 +35,7 @@
         <option value="Educator"></option>
       </datalist>
     </div>
-    <button type="submit">Login</button>
+    <button type="submit" [disabled]="!registrationForm.valid">Register</button>
     <a routerLink="/login-doctor">Login as doctor</a><br>
     <a routerLink="/login-patient">Login as patient</a><br>
 
