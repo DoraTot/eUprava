@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginPatientComponent } from './login-patient/login-patient.component';
 import { LoginDoctorComponent } from './login-doctor/login-doctor.component';
 import {RegisterComponent} from "./register/register.component";
+import {AttemdanceRecordComponent} from './attemdance-record/attemdance-record.component';
 
 // const routes: Routes = [];
 
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'login-patient', component: LoginPatientComponent },
   { path: 'login-doctor', component: LoginDoctorComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'attendance', component: AttemdanceRecordComponent },
 
   { path: '', redirectTo: '/login-patient', pathMatch: 'full' },
 ];

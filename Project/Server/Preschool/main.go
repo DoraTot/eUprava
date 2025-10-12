@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
+	"main.go/config"
 	"main.go/handlers"
 	"main.go/repository"
 	"net/http"
@@ -14,7 +15,8 @@ import (
 func main() {
 	fmt.Println("Hello, World!")
 
-	dsn := "root:secret@tcp(db:3306)/e_uprava"
+	//dsn := "root:secret@tcp(db:3306)/e_uprava"
+	dsn := config.GetDSN()
 	var db *sql.DB
 	var err error
 	for i := 0; i < 10; i++ {
@@ -47,6 +49,7 @@ func main() {
 	userHandler := handlers.NewUserHandler(userRepo)
 
 	http.Handle("/register", enableCORS(http.HandlerFunc(userHandler.RegisterUser)))
+	http.Handle("/login", enableCORS(http.HandlerFunc(userHandler.HandleAuth0Login)))
 
 	log.Println("Server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
