@@ -1,2 +1,56 @@
-<p>attemdance-record works!</p>
+<p>attendance-record works!</p>
 <button (click)="logout()" type="button">Log out</button>
+
+<h2>Attendance Records</h2>
+<table>
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Child</th>
+    <th>Parent</th>
+    <th>Date</th>
+    <th>Missing</th>
+    <th>Justified</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let record of records">
+    <td>{{ record.id }}</td>
+    <td>{{ record.child }}</td>
+    <td>{{ record.parent }}</td>
+    <td>{{ record.date }}</td>
+    <td>{{ record.missing ? 'Yes' : 'No' }}</td>
+    <td>{{ record.justified ? 'Yes' : 'No' }}</td>
+    <td>
+      <button (click)="markMissing(record.id)" >Mark Missing</button>
+      <button (click)="justify(record.id)">Justify</button>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<h2>Add Attendance Record</h2>
+<form [formGroup]="attendanceForm" (ngSubmit)="addRecord()">
+  <label>
+    Child:
+    <input type="text" formControlName="child">
+  </label><br>
+
+  <label>
+    Parent:
+    <input type="text" formControlName="parent">
+  </label><br>
+
+  <label>
+    Date:
+    <input type="date" formControlName="date">
+  </label><br>
+
+  <label>
+    Missing:
+    <input type="checkbox" formControlName="missing">
+  </label><br>
+
+  <button type="submit" [disabled]="attendanceForm.invalid">Add Record</button>
+</form>

@@ -2,11 +2,12 @@ CREATE DATABASE IF NOT EXISTS e_uprava;
 
 USE e_uprava;
 
-CREATE TABLE IF NOT EXISTS users (
+
+CREATE TABLE IF NOT EXISTS attendance_record (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    lname VARCHAR(50) NOT NULL,
-    fname VARCHAR(50) NOT NULL,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    usertype VARCHAR(50) NOT NULL
+    child VARCHAR(100) NOT NULL,
+    parent_auth0_id VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    missing BOOLEAN DEFAULT FALSE,
+    justified BOOLEAN DEFAULT FALSE
     );

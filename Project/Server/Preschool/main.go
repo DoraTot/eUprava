@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lestrrat-go/jwx/v2/jwk"
 	"log"
 	"main.go/config"
 	"main.go/handlers"
@@ -48,7 +49,10 @@ func main() {
 	userRepo := repository.NewUserRepo(db)
 	userHandler := handlers.NewUserHandler(userRepo)
 
-	http.Handle("/register", enableCORS(http.HandlerFunc(userHandler.RegisterUser)))
+	attendanceRepo := repository.NewAttendanceRepo(db)
+	attendanceHandler := handlers.NewAttendanceHandler(attendanceRepo)
+
+	http.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.GetRecords)))
 	http.Handle("/login", enableCORS(http.HandlerFunc(userHandler.HandleAuth0Login)))
 
 	log.Println("Server running on :8080")

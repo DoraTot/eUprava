@@ -1,4 +1,3 @@
-/* Base reset and font */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -69,7 +68,6 @@ button:hover {
   background-color: #78C3CE;
 }
 
-/* ✅ Media query for small screens */
 @media (max-width: 480px) {
   .login-container {
     padding: 20px;

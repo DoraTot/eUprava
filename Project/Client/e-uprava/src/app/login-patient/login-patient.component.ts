@@ -12,16 +12,23 @@ export class LoginPatientComponent implements OnInit{
 
   constructor(public auth: AuthService, private http: HttpClient, private router: Router) {}
 
+  selectedRole: 'Patient' | 'Doctor' | null = null;
+  authIdToken: string | null = null;
+
   ngOnInit() {
     this.auth.idTokenClaims$.subscribe(claims => {
       if (claims && claims.__raw) {
-        const token = claims.__raw;
-        this.http.post('http://localhost:8080/login', { token })
-          .subscribe({
-            next: res => {console.log('Backend verified:', res),
-              this.router.navigate(['/attendance']);},
-            error: err => console.error('Verification failed:', err)
-          });
+        this.authIdToken = claims.__raw;
+        const role = claims['https://myapp.example/role'];
+        console.log('Auth0 ID Token:', this.authIdToken);
+        console.log('Auth0 Claims:', claims);
+        console.log('User role:', role);
+        // if (role === 'Educator') {
+          this.router.navigate(['/attendance']);
+        // }
+        // else {
+        //   this.router.navigate(['/attendance']);
+        // }
       }
     });
   }
