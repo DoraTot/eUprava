@@ -57,8 +57,21 @@ func (h *UserHandler) HandleAuth0Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": "User verified and synced with database",
+		"message": "User verified",
 		"email":   email,
 	})
 
+}
+
+func (h *UserHandler) GetParents(w http.ResponseWriter, r *http.Request) {
+	parents, err := repository.GetParentsFromAuth0()
+	if err != nil {
+		log.Println("Error fetching parents:", err)
+		http.Error(w, "Failed to fetch parents", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("Fetched parents:", parents)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(parents)
 }

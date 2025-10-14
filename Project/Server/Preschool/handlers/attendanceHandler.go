@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"main.go/repository"
 	"net/http"
+	"time"
 )
 
 type AttendanceHandler struct {
@@ -25,32 +27,44 @@ func (h *AttendanceHandler) GetRecords(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(records)
 }
 
-func (h *AttendanceHandler) HandleCreateAttendance(w http.ResponseWriter, r *http.Request) {
+func (h *AttendanceHandler) PostRecord(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var record struct {
-		Child  string `json:"child"`
-		Parent string `json:"parent_auth0_id"`
-		Date   string `json:"date"`
+	var req struct {
+		Child   string `json:"child"`
+		Parent  string `json:"parent"`
+		Date    string `json:"date"`
+		Missing bool   `json:"missing"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&record); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
 
-	query := `
-        INSERT INTO attendance_record (child, parent_auth0_id, date, missing, justified)
-        VALUES (?, ?, ?, FALSE, FALSE)
-    `
-	_, err := h.Repo.DB.Exec(query, record.Child, record.Parent, record.Date)
+	dateTime, err := time.Parse("2006-01-02", req.Date)
 	if err != nil {
-		http.Error(w, "Failed to create record", http.StatusInternalServerError)
+		http.Error(w, "Invalid date format", http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	recordID, err := h.Repo.InsertAttendance(req.Child, req.Parent, dateTime, req.Missing)
+	if err != nil {
+		log.Println("Failed to insert attendance:", err)
+		http.Error(w, "Failed to insert record", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Attendance added",
+		"id":      recordID,
+	})
 }

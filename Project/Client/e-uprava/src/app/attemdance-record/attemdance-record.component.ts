@@ -14,6 +14,9 @@ export class AttemdanceRecordComponent implements OnInit {
 
   attendanceForm!: FormGroup;
   records: any[] = [];
+  parents: any[] = [];
+  authIdToken: string | null = null;
+  role: string = "";
 
   constructor(private fb: FormBuilder, public auth: AuthService, private http: HttpClient) {}
 
@@ -25,6 +28,20 @@ export class AttemdanceRecordComponent implements OnInit {
       missing: [false]
     });
 
+    this.auth.idTokenClaims$.subscribe(claims => {
+      if (claims && claims.__raw) {
+        this.authIdToken = claims.__raw;
+        const role = claims['https://myapp.example/role'];
+        console.log('Auth0 ID Token:', this.authIdToken);
+        console.log('Auth0 Claims:', claims);
+        console.log('User role:', role);
+        this.role = role;
+
+      }
+    });
+
+
+    this.fetchParents();
     this.loadRecords();
   }
 
@@ -70,6 +87,12 @@ export class AttemdanceRecordComponent implements OnInit {
   justify(id: number) {
     this.http.post(`http://localhost:8080/attendance/${id}/justify`, {})
       .subscribe(() => this.loadRecords());
+  }
+
+  fetchParents() {
+    this.http.get<any[]>('http://localhost:8080/parents').subscribe(data => {
+      this.parents = data;
+    });
   }
 
 }

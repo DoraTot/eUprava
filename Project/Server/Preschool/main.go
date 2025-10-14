@@ -52,7 +52,20 @@ func main() {
 	attendanceRepo := repository.NewAttendanceRepo(db)
 	attendanceHandler := handlers.NewAttendanceHandler(attendanceRepo)
 
-	http.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.GetRecords)))
+	http.Handle("/parents", enableCORS(http.HandlerFunc(userHandler.GetParents)))
+	//http.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.GetRecords)))
+	//http.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.PostRecord)))
+	http.Handle("/attendance", enableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			attendanceHandler.GetRecords(w, r)
+		case http.MethodPost:
+			attendanceHandler.PostRecord(w, r)
+			//default:
+			//	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})))
+
 	http.Handle("/login", enableCORS(http.HandlerFunc(userHandler.HandleAuth0Login)))
 
 	log.Println("Server running on :8080")

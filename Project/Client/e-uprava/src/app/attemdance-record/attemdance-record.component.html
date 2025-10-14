@@ -26,20 +26,18 @@
         <td>{{ record.missing ? 'Yes' : 'No' }}</td>
         <td>{{ record.justified ? 'Yes' : 'No' }}</td>
         <td>
-          <button class="btn btn-sm btn-warning me-1" (click)="markMissing(record.id)">Mark Missing</button>
-          <button class="btn btn-sm btn-success" (click)="justify(record.id)">Justify</button>
+<!--          <button class="btn btn-sm btn-warning me-1" (click)="markMissing(record.id)">Mark Missing</button>-->
+          <button *ngIf="role === 'Patient/Parent'" class="btn btn-sm btn-success" (click)="justify(record.id)">Justify</button>
         </td>
       </tr>
       </tbody>
     </table>
   </div>
 
-  <!-- Button to open modal -->
-  <button type="button" class="btn btn-primary mb-3" (click)="openModal()">
+  <button *ngIf="role === 'Educator'" type="button" class="btn btn-primary mb-3" (click)="openModal()">
     Add Attendance Record
   </button>
 
-  <!-- Modal -->
   <div #attendanceModal class="modal fade" tabindex="-1" style="display:none;">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -59,7 +57,11 @@
 
             <div class="mb-3">
               <label class="form-label">Parent</label>
-              <input type="text" class="form-control" formControlName="parent" placeholder="Parent Name">
+              <select class="form-control" formControlName="parent">
+                <option *ngFor="let parent of parents" [value]="parent.user_id">
+                  {{ parent.name }} ({{ parent.email }})
+                </option>
+              </select>
             </div>
 
             <div class="mb-3">

@@ -22,3 +22,9 @@ type AttendanceRecord struct {
 	Missing   bool   `json:"missing" db:"missing"`
 	Justified bool   `json:"justified" db:"justified"`
 }
+
+type ParentUser struct {
+	UserID string `json:"user_id"`
+	Email  string `json:"email"`
+	Name   string `json:"name"`
+}
