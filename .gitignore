@@ -1,1 +1,5 @@
 .idea
+node_modules
+Project/Client/e-uprava/node_modules
+Project/Client/e-uprava/.vscode
+Project/Client/e-uprava/.angular

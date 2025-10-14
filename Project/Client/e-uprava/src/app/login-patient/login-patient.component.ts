@@ -24,7 +24,7 @@ export class LoginPatientComponent implements OnInit{
         console.log('Auth0 Claims:', claims);
         console.log('User role:', role);
         // if (role === 'Educator') {
-          this.router.navigate(['/attendance']);
+          this.router.navigate(['/home']);
         // }
         // else {
         //   this.router.navigate(['/attendance']);

@@ -8,12 +8,20 @@ import {ReactiveFormsModule} from '@angular/forms';
 import {HttpClientModule} from '@angular/common/http';
 import {AuthModule} from '@auth0/auth0-angular';
 import { AttemdanceRecordComponent } from './attemdance-record/attemdance-record.component';
+import { HomeComponent } from './home/home/home.component';
+import { AppointmentsComponent } from './appointments/appointments/appointments.component';
+import { MedJustificationComponent } from './med-justification/med-justification/med-justification.component';
+import { HeaderComponent } from './header/header/header.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginPatientComponent,
-    AttemdanceRecordComponent
+    AttemdanceRecordComponent,
+    HomeComponent,
+    AppointmentsComponent,
+    MedJustificationComponent,
+    HeaderComponent
   ],
   imports: [
     BrowserModule,
