@@ -11,3 +11,21 @@ CREATE TABLE IF NOT EXISTS attendance_record (
     missing BOOLEAN DEFAULT FALSE,
     justified BOOLEAN DEFAULT FALSE
     );
+
+CREATE TABLE IF NOT EXISTS appointments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    child_name VARCHAR(255),
+    parent_id INT,
+    doctor_id INT,
+    date_time DATETIME,
+    notes TEXT
+    );
+
+CREATE TABLE IF NOT EXISTS medical_justifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    child_name VARCHAR(255),
+    doctor_id INT,
+    parent_id INT,
+    date DATE,
+    reason TEXT
+    );

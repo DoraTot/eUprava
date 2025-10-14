@@ -11,6 +11,18 @@ services:
       - DB_PASS=secret
       - DB_NAME=e_uprava
 
+  healthcare:
+    build: ./Server/Healthcare
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=root
+      - DB_NAME=e_uprava
+
   db:
     image: mysql:8
     restart: always
@@ -18,7 +30,7 @@ services:
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: e_uprava
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
