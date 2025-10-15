@@ -27,7 +27,9 @@ func (h *AppointmentHandler) CreateAppointment(w http.ResponseWriter, r *http.Re
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+	//w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 }
 
 func (h *AppointmentHandler) GetAppointments(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +46,18 @@ func (h *AppointmentHandler) GetAppointments(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	json.NewEncoder(w).Encode(appointments)
+}
+
+func (h *AppointmentHandler) GetAppointment(w http.ResponseWriter, r *http.Request) {
+
+	appointments, err := h.Repo.GetAppointments()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(appointments)
 }
 

@@ -46,13 +46,13 @@ func main() {
 		log.Fatalf("DB ping failed: %v", err)
 	}
 
-	userRepo := repository.NewUserRepo(db)
-	userHandler := handlers.NewUserHandler(userRepo)
+	//userRepo := repository.NewUserRepo(db)
+	//userHandler := handlers.NewUserHandler(userRepo)
 
 	attendanceRepo := repository.NewAttendanceRepo(db)
 	attendanceHandler := handlers.NewAttendanceHandler(attendanceRepo)
 
-	http.Handle("/parents", enableCORS(http.HandlerFunc(userHandler.GetParents)))
+	//http.Handle("/parents", enableCORS(http.HandlerFunc(userHandler.GetParents)))
 	//http.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.GetRecords)))
 	//http.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.PostRecord)))
 	http.Handle("/attendance", enableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +66,7 @@ func main() {
 		}
 	})))
 
-	http.Handle("/login", enableCORS(http.HandlerFunc(userHandler.HandleAuth0Login)))
+	//http.Handle("/login", enableCORS(http.HandlerFunc(userHandler.HandleAuth0Login)))
 
 	log.Println("Server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

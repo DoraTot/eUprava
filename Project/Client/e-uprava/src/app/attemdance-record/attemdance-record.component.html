@@ -26,15 +26,16 @@
         <td>{{ record.missing ? 'Yes' : 'No' }}</td>
         <td>{{ record.justified ? 'Yes' : 'No' }}</td>
         <td>
-<!--          <button class="btn btn-sm btn-warning me-1" (click)="markMissing(record.id)">Mark Missing</button>-->
-          <button *ngIf="role === 'Patient/Parent'" class="btn btn-sm btn-success" (click)="justify(record.id)">Justify</button>
+<!--          <button *ngIf="role === 'Patient/Parent'" class="btn btn-sm btn-success" (click)="openModal2(record.id)">Justify</button>-->
+          <button class="btn btn-sm btn-success" (click)="openModal2(record.id)">Justify</button>
         </td>
       </tr>
       </tbody>
     </table>
   </div>
 
-  <button *ngIf="role === 'Educator'" type="button" class="btn btn-primary mb-3" (click)="openModal()">
+<!--  <button *ngIf="role === 'Educator'" type="button" class="btn btn-primary mb-3" (click)="openModal()">-->
+    <button type="button" class="btn btn-primary mb-3" (click)="openModal()">
     Add Attendance Record
   </button>
 
@@ -85,5 +86,36 @@
       </div>
     </div>
   </div>
+
+  <div #appointmentModal2 class="modal fade" tabindex="-1" style="display:none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-body">
+<!--          <form [formGroup]="appForm" (ngSubmit)="justify()">-->
+
+<!--            <div class="mb-3">-->
+<!--              <label class="form-label">Medical Justification</label>-->
+<!--              <select class="form-select" formControlName="medical_justification">-->
+<!--                <option *ngFor="let med of medicalRecords">-->
+<!--                  {{ med.name }}-->
+<!--                </option>-->
+<!--              </select>-->
+<!--            </div>-->
+
+            <div class="text-end">
+              <button type="button" class="btn btn-secondary me-2" (click)="closeModal2()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Choose</button>
+            </div>
+
+<!--          </form>-->
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
 
 </div>

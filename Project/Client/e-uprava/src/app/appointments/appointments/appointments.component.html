@@ -19,11 +19,14 @@
       <tbody>
       <tr *ngFor="let a of appointments">
         <td>{{ a.id }}</td>
-        <td>{{ a.childName }}</td>
-        <td>{{ a.parentID }}</td>
-        <td>{{ a.doctorID }}</td>
-        <td>{{ a.dateTime | date:'short' }}</td>
+        <td>{{ a.child_name }}</td>
+        <td>{{ a.parent_id }}</td>
+        <td>{{ a.doctor_id }}</td>
+        <td>{{ a.date_time | date:'short' }}</td>
         <td>{{ a.notes }}</td>
+        <td>
+          <button class="btn btn-sm btn-success" (click)="openModal2(a)">Approve</button>
+        </td>
       </tr>
       </tbody>
     </table>
@@ -49,22 +52,32 @@
 
             <div class="mb-3">
               <label class="form-label">Child Name</label>
-              <input type="text" class="form-control" formControlName="childName" placeholder="Child Name">
+              <input type="text" class="form-control" formControlName="child_name" placeholder="Child Name">
             </div>
 
             <div class="mb-3">
               <label class="form-label">Parent ID</label>
-              <input type="number" class="form-control" formControlName="parentID">
+<!--              <input type="text" class="form-control" formControlName="parentID">-->
+              <select class="form-control" formControlName="parent_id">
+                <option *ngFor="let parent of parents" [value]="parent.user_id">
+                  {{ parent.name }} ({{ parent.email }})
+                </option>
+              </select>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Doctor ID</label>
-              <input type="number" class="form-control" formControlName="doctorID">
+<!--              <input type="number" class="form-control" formControlName="doctorID">-->
+              <select class="form-control" formControlName="doctor_id">
+                <option *ngFor="let doctor of doctors" [value]="doctor.user_id">
+                  {{ doctor.name }} ({{ doctor.email }})
+                </option>
+              </select>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Date & Time</label>
-              <input type="datetime-local" class="form-control" formControlName="dateTime">
+              <input type="datetime-local" class="form-control" formControlName="date_time">
             </div>
 
             <div class="mb-3">
@@ -74,7 +87,7 @@
 
             <div class="text-end">
               <button type="button" class="btn btn-secondary me-2" (click)="closeModal()">Close</button>
-              <button type="submit" class="btn btn-primary" [disabled]="appointmentForm.invalid">Add</button>
+              <button type="submit" class="btn btn-primary" >Add</button>
             </div>
 
           </form>
@@ -83,5 +96,33 @@
       </div>
     </div>
   </div>
+
+
+  <div #appointmentModal2 class="modal fade" tabindex="-1" style="display:none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+
+        <div class="modal-body">
+          <form [formGroup]="medForm" (ngSubmit)="approve()">
+
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              <input type="text" class="form-control" formControlName="reason">
+            </div>
+
+            <div class="text-end">
+              <button type="button" class="btn btn-secondary me-2" (click)="closeModal2()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Approve</button>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
 
 </div>

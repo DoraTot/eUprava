@@ -47,6 +47,29 @@ func (r *AppointmentRepository) GetAppointmentsByParent(parentID int) ([]model.A
 	return appointments, nil
 }
 
+func (r *AppointmentRepository) GetAppointments() ([]model.Appointment, error) {
+	query := `
+		SELECT id, child_name, parent_id, doctor_id, date_time, notes
+		FROM appointments
+		`
+	rows, err := r.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var appointments []model.Appointment
+	for rows.Next() {
+		var a model.Appointment
+		if err := rows.Scan(&a.ID, &a.ChildName, &a.ParentID, &a.DoctorID, &a.DateTime, &a.Notes); err != nil {
+			log.Println(err)
+			continue
+		}
+		appointments = append(appointments, a)
+	}
+	return appointments, nil
+}
+
 func (r *AppointmentRepository) GetAppointmentsByDoctor(doctorID int) ([]model.Appointment, error) {
 	query := `
 		SELECT id, child_name, parent_id, doctor_id, date_time, notes

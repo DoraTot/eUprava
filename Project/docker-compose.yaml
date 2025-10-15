@@ -14,7 +14,19 @@ services:
   healthcare:
     build: ./Server/Healthcare
     ports:
-      - "8081:8080"
+      - "8081:8081"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=root
+      - DB_NAME=e_uprava
+
+  user:
+    build: ./Server/User
+    ports:
+      - "8082:8082"
     depends_on:
       - db
     environment:

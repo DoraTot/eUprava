@@ -2,17 +2,17 @@ package model
 
 type UserType string
 
-const (
-	Patient UserType = "Patient"
-	Doctor  UserType = "Doctor"
-)
-
-type User struct {
-	Fname    string   `json:"fname" db:"fname"`
-	Lname    string   `json:"lname" db:"lname"`
-	Auth0ID  string   `json:"auth0_id" db:"auth0_id"`
-	Usertype UserType `json:"usertype" db:"usertype"`
-}
+//const (
+//	Patient UserType = "Patient"
+//	Doctor  UserType = "Doctor"
+//)
+//
+//type User struct {
+//	Fname    string   `json:"fname" db:"fname"`
+//	Lname    string   `json:"lname" db:"lname"`
+//	Auth0ID  string   `json:"auth0_id" db:"auth0_id"`
+//	Usertype UserType `json:"usertype" db:"usertype"`
+//}
 
 type AttendanceRecord struct {
 	ID        int    `json:"id" db:"id"`
@@ -23,8 +23,8 @@ type AttendanceRecord struct {
 	Justified bool   `json:"justified" db:"justified"`
 }
 
-type ParentUser struct {
-	UserID string `json:"user_id"`
-	Email  string `json:"email"`
-	Name   string `json:"name"`
-}
+//type ParentUser struct {
+//	UserID string `json:"user_id"`
+//	Email  string `json:"email"`
+//	Name   string `json:"name"`
+//}

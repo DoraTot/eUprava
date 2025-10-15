@@ -52,14 +52,16 @@ func main() {
 	medicalJustificationHandler := handler.NewMedicalJustificationHandler(medicalJustificationRepo)
 
 	http.Handle("/getJustification", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustifications)))
+	http.Handle("/medicalRecord/user/{userId}", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustificationsForParent)))
 	http.Handle("/createJustification", enableCORS(http.HandlerFunc(medicalJustificationHandler.CreateJustification)))
 
 	http.Handle("/createAppointment", enableCORS(http.HandlerFunc(appointmentHandler.CreateAppointment)))
 	http.Handle("/getAppointments/{id}", enableCORS(http.HandlerFunc(appointmentHandler.GetAppointments)))
+	http.Handle("/getAppointments", enableCORS(http.HandlerFunc(appointmentHandler.GetAppointment)))
 	http.Handle("/getAppointmentsByDoctor", enableCORS(http.HandlerFunc(appointmentHandler.GetAppointmentsByDoctor)))
 
-	log.Println("Server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Server running on :8081")
+	log.Fatal(http.ListenAndServe(":8081", nil))
 
 }
 

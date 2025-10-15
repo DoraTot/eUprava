@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"main.go/model"
 	"main.go/repository"
 	"net/http"
@@ -45,4 +46,18 @@ func (h *MedicalJustificationHandler) GetJustifications(w http.ResponseWriter, r
 	}
 
 	json.NewEncoder(w).Encode(justifications)
+}
+
+func (h *MedicalJustificationHandler) GetJustificationsForParent(w http.ResponseWriter, r *http.Request) {
+	//parentIDStr := r.URL.Query().Get("userId")
+	vars := mux.Vars(r)
+	parentID := vars["userId"]
+
+	justification, err := h.Repo.GetAppointmentsByParent(parentID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(justification)
 }
