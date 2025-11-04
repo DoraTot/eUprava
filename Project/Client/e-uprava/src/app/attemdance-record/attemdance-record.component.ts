@@ -68,7 +68,8 @@ export class AttemdanceRecordComponent implements OnInit {
   }
 
   loadMedicalRecords(userId: string) {
-    this.http.get<any[]>(`http://localhost:8081/medicalRecord/user/${userId}`)
+    const encodedId = encodeURIComponent(this.userId);
+    this.http.get<any[]>(`http://localhost:8081/medicalRecord/user/${encodedId}`)
       .subscribe(res => this.records = res);
   }
 

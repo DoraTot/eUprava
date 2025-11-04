@@ -1,13 +1,14 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
+import {AuthService} from '@auth0/auth0-angular';
 
 interface MedicalJustification {
   id?: number;
-  childName: string;
-  doctorID: number;
-  parentID: number;
-  date: string;
+  child_name: string;
+  doctor_id: string;
+  parent_id: string;
+  dated: string;
   reason: string;
 }
 
@@ -21,7 +22,11 @@ export class MedJustificationComponent implements OnInit {
   justificationForm!: FormGroup;
   @ViewChild('justificationModal') modal!: ElementRef;
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {}
+  authIdToken: string | null = null;
+  role: string = "";
+  parent_id: string = "";
+
+  constructor(private fb: FormBuilder, private http: HttpClient, public auth: AuthService) {}
 
   ngOnInit(): void {
     this.justificationForm = this.fb.group({
@@ -32,13 +37,32 @@ export class MedJustificationComponent implements OnInit {
       reason: ['', Validators.required]
     });
 
-    this.loadJustifications();
+    this.auth.idTokenClaims$.subscribe(claims => {
+      if (claims && claims.__raw) {
+        this.authIdToken = claims.__raw;
+        const role = claims['https://myapp.example/role'];
+        // console.log('Auth0 ID Token:', this.authIdToken);
+        console.log('Auth0 Claims:', claims);
+        // console.log('User role:', role);
+        this.role = role;
+        this.parent_id = claims['sub'];
+        console.log("ParentID: ", this.parent_id);
+        this.loadJustifications();
+
+      }
+    });
+
+
+    console.log("LOAD medical justification for parent id:", this.parent_id);
+
   }
 
   loadJustifications() {
-    const parentId = 1; // replace with real logged-in parent ID
+    const parentId = this.parent_id;
+    console.log("ParentID: ", parentId);
     this.http.get<MedicalJustification[]>(`http://localhost:8081/getJustification?parentId=${parentId}`)
       .subscribe(data => this.justifications = data);
+    console.log(this.justifications);
   }
 
   addJustification() {

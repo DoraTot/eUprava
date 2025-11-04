@@ -3,10 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"log"
 	"main.go/model"
 	"main.go/repository"
 	"net/http"
-	"strconv"
 )
 
 type MedicalJustificationHandler struct {
@@ -32,10 +32,9 @@ func (h *MedicalJustificationHandler) CreateJustification(w http.ResponseWriter,
 }
 
 func (h *MedicalJustificationHandler) GetJustifications(w http.ResponseWriter, r *http.Request) {
-	parentIDStr := r.URL.Query().Get("parentId")
-	parentID, err := strconv.Atoi(parentIDStr)
-	if err != nil {
-		http.Error(w, "Invalid parent ID", http.StatusBadRequest)
+	parentID := r.URL.Query().Get("parentId")
+	if parentID == "" {
+		http.Error(w, "Missing parent ID", http.StatusBadRequest)
 		return
 	}
 
@@ -52,6 +51,7 @@ func (h *MedicalJustificationHandler) GetJustificationsForParent(w http.Response
 	//parentIDStr := r.URL.Query().Get("userId")
 	vars := mux.Vars(r)
 	parentID := vars["userId"]
+	log.Println("Received parentID:", parentID)
 
 	justification, err := h.Repo.GetAppointmentsByParent(parentID)
 	if err != nil {
