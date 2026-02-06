@@ -33,6 +33,7 @@ export class AttemdanceRecordComponent implements OnInit {
   parents: any[] = [];
   authIdToken: string | null = null;
   role: string = "";
+
   userId: string = "";
 
   constructor(private fb: FormBuilder, public auth: AuthService, private http: HttpClient) {}
@@ -68,9 +69,45 @@ export class AttemdanceRecordComponent implements OnInit {
   }
 
   loadMedicalRecords(userId: string) {
-    const encodedId = encodeURIComponent(this.userId);
-    this.http.get<any[]>(`http://localhost:8081/medicalRecord/user/${encodedId}`)
-      .subscribe(res => this.records = res);
+
+    // this.auth.idTokenClaims$.subscribe(claims => {
+    //   if (claims && claims.__raw) {
+    //     this.authIdToken = claims.__raw;
+    //     const role = claims['https://myapp.example/role'];
+    //     const userSub = claims['sub'] as string;
+    //     console.log('Auth0 ID Token:', this.authIdToken);
+    //     console.log('Auth0 Claims:', claims);
+    //     console.log('User role:', role);
+    //     this.role = role;
+    //     // this.userId = claims.sub;
+    //     this.http.get<any[]>(`http://localhost:8081/medicalRecord/user/${userSub}`)
+    //       .subscribe(res => this.records = res,
+    //         console.log(this.records););
+    //
+    //   }
+    // });
+    this.auth.idTokenClaims$.subscribe(claims => {
+      if (claims && claims.__raw) {
+        this.authIdToken = claims.__raw;
+
+        const role = claims['https://myapp.example/role'] as string;
+        const userSub = claims['sub'] as string;
+
+        console.log('Auth0 ID Token:', this.authIdToken);
+        console.log('Auth0 Claims:', claims);
+        console.log('User role:', role);
+
+        this.role = role;
+
+        this.http
+          .get<any[]>(`http://localhost:8081/medicalRecord/user/${userSub}`)
+          .subscribe(res => {
+            this.records = res;
+            console.log("records: ", this.records);
+          });
+      }
+    });
+
   }
 
   loadRecords() {

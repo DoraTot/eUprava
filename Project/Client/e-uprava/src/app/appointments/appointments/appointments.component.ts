@@ -19,7 +19,7 @@ interface Appointment {
 export class AppointmentsComponent implements OnInit {
   appointments: Appointment[] = [];
   appointmentForm!: FormGroup;
-  medForm: FormGroup = new FormGroup({});
+    medForm: FormGroup = new FormGroup({});
   parents: any[] = [];
   doctors: any[] = [];
 
@@ -121,12 +121,26 @@ export class AppointmentsComponent implements OnInit {
 
     console.log('Form values:', newMedicalRecord);
 
+    // this.http.post('http://localhost:8081/createJustification', newMedicalRecord)
+    //   .subscribe(() => {
+    //     this.loadAppointments();
+    //     this.closeModal();
+    //     this.medForm.reset();
+    //   });
+
     this.http.post('http://localhost:8081/createJustification', newMedicalRecord)
-      .subscribe(() => {
-        this.loadAppointments();
-        this.closeModal();
-        this.medForm.reset();
+      .subscribe({
+        next: (res) => {
+          console.log('POST SUCCESS:', res);
+          this.loadAppointments();
+          this.closeModal();
+          this.medForm.reset();
+        },
+        error: (err) => {
+          console.error('POST ERROR:', err);
+        }
       });
+
 
   }
 

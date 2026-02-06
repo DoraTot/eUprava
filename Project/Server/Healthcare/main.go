@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 	_ "github.com/lestrrat-go/jwx/v2/jwk"
 	"log"
 	"main.go/config"
@@ -29,7 +30,7 @@ func main() {
 
 		err = db.Ping()
 		if err == nil {
-			break // ✅ DB is ready
+			break
 		}
 
 		log.Println("Waiting for DB (ping)...", err)
@@ -45,21 +46,77 @@ func main() {
 		log.Fatalf("DB ping failed: %v", err)
 	}
 
+	r := mux.NewRouter()
+
 	appointmentRepo := repository.NewAppointmentRepository(db)
 	appointmentHandler := handler.NewAppointmentHandler(appointmentRepo)
 
 	medicalJustificationRepo := repository.NewMedicalJustificationRepository(db)
 	medicalJustificationHandler := handler.NewMedicalJustificationHandler(medicalJustificationRepo)
 
-	http.Handle("/getJustification", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustifications)))
-	http.Handle("/medicalRecord/user/{userId}", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustificationsForParent)))
-	http.Handle("/createJustification", enableCORS(http.HandlerFunc(medicalJustificationHandler.CreateJustification)))
+	r.Handle(
+		"/medicalRecord/user/{userId}",
+		enableCORS(http.HandlerFunc(
+			medicalJustificationHandler.GetJustificationsForParent,
+		)),
+	).Methods("GET")
 
-	http.Handle("/createAppointment", enableCORS(http.HandlerFunc(appointmentHandler.CreateAppointment)))
-	http.Handle("/getAppointments/{id}", enableCORS(http.HandlerFunc(appointmentHandler.GetAppointments)))
-	http.Handle("/getAppointments", enableCORS(http.HandlerFunc(appointmentHandler.GetAppointment)))
-	http.Handle("/getAppointmentsByDoctor", enableCORS(http.HandlerFunc(appointmentHandler.GetAppointmentsByDoctor)))
+	r.Handle(
+		"/getJustification",
+		enableCORS(http.HandlerFunc(
+			medicalJustificationHandler.GetJustifications,
+		)),
+	).Methods("GET")
 
+	r.Handle(
+		"/createJustification",
+		enableCORS(http.HandlerFunc(
+			medicalJustificationHandler.CreateJustification,
+		)),
+	).Methods("POST")
+
+	// ---- Appointment routes ----
+	r.Handle(
+		"/createAppointment",
+		enableCORS(http.HandlerFunc(
+			appointmentHandler.CreateAppointment,
+		)),
+	).Methods("POST")
+
+	r.Handle(
+		"/getAppointments/{id}",
+		enableCORS(http.HandlerFunc(
+			appointmentHandler.GetAppointments,
+		)),
+	).Methods("GET")
+
+	r.Handle(
+		"/getAppointments",
+		enableCORS(http.HandlerFunc(
+			appointmentHandler.GetAppointment,
+		)),
+	).Methods("GET")
+
+	r.Handle(
+		"/getAppointmentsByDoctor",
+		enableCORS(http.HandlerFunc(
+			appointmentHandler.GetAppointmentsByDoctor,
+		)),
+	).Methods("GET")
+
+	//http.Handle("/getJustification", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustifications)))
+	//http.Handle("/medicalRecord/user/{userId}", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustificationsForParent)))
+	//http.Handle("/createJustification", enableCORS(http.HandlerFunc(medicalJustificationHandler.CreateJustification)))
+	//
+	//http.Handle("/createAppointment", enableCORS(http.HandlerFunc(appointmentHandler.CreateAppointment)))
+	//http.Handle("/getAppointments/{id}", enableCORS(http.HandlerFunc(appointmentHandler.GetAppointments)))
+	//http.Handle("/getAppointments", enableCORS(http.HandlerFunc(appointmentHandler.GetAppointment)))
+	//http.Handle("/getAppointmentsByDoctor", enableCORS(http.HandlerFunc(appointmentHandler.GetAppointmentsByDoctor)))
+	//
+	//log.Println("Server running on :8081")
+	//log.Fatal(http.ListenAndServe(":8081", nil))
+
+	http.ListenAndServe(":8081", r)
 	log.Println("Server running on :8081")
 	log.Fatal(http.ListenAndServe(":8081", nil))
 
