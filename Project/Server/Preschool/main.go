@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 	_ "github.com/lestrrat-go/jwx/v2/jwk"
 	"log"
 	"main.go/config"
@@ -52,36 +53,66 @@ func main() {
 	attendanceRepo := repository.NewAttendanceRepo(db)
 	attendanceHandler := handlers.NewAttendanceHandler(attendanceRepo)
 
+	r := mux.NewRouter()
+
 	//http.Handle("/parents", enableCORS(http.HandlerFunc(userHandler.GetParents)))
 	//http.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.GetRecords)))
 	//http.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.PostRecord)))
-	http.Handle("/attendance", enableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			attendanceHandler.GetRecords(w, r)
-		case http.MethodPost:
-			attendanceHandler.PostRecord(w, r)
-			//default:
-			//	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})))
+	//r.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.GetRecords))).Methods("POST")
+
+	//r.Handle("/attendance/pickUp", enableCORS(http.HandlerFunc(attendanceHandler.PickUp))).Methods("POST")
+	//r.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.GetRecords))).Methods(http.MethodGet)
+	//r.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.PostRecord))).Methods(http.MethodPost)
+
+	r.HandleFunc("/attendance", attendanceHandler.GetRecords).Methods("GET")
+	r.HandleFunc("/attendance", attendanceHandler.PostRecord).Methods("POST")
+	r.HandleFunc("/attendance/pickUp", attendanceHandler.PickUp).Methods("POST")
+
+	//http.Handle("/attendance", enableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//	switch r.Method {
+	//	case http.MethodGet:
+	//		attendanceHandler.GetRecords(w, r)
+	//	case http.MethodPost:
+	//		attendanceHandler.PostRecord(w, r)
+	//		//default:
+	//		//	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	//	}
+	//})))
 
 	//http.Handle("/login", enableCORS(http.HandlerFunc(userHandler.HandleAuth0Login)))
 
+	//log.Println("Server running on :8080")
+	//log.Fatal(http.ListenAndServe(":8080", nil))
 	log.Println("Server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", enableCORS(r)))
 
 }
 
+//func enableCORS(next http.Handler) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		w.Header().Set("Access-Control-Allow-Origin", "*")
+//		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+//		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+//		if r.Method == "OPTIONS" {
+//			w.WriteHeader(http.StatusNoContent)
+//			return
+//		}
+//		next.ServeHTTP(w, r)
+//	})
+//}
+
 func enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		if r.Method == "OPTIONS" {
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept")
+
+		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }

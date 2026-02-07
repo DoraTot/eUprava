@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS attendance_record (
     parent_auth0_id VARCHAR(100) NOT NULL,
     date DATE NOT NULL,
     missing BOOLEAN DEFAULT FALSE,
-    justified BOOLEAN DEFAULT FALSE
+    justified BOOLEAN DEFAULT FALSE,
+    picked_up BOOLEAN DEFAULT FALSE
     );
 
 CREATE TABLE IF NOT EXISTS appointments (
