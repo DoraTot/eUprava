@@ -8,24 +8,36 @@
     <table class="table table-striped table-bordered align-middle">
       <thead class="table-dark">
       <tr>
-        <th>ID</th>
         <th>Child</th>
-        <th>Parent ID</th>
-        <th>Doctor ID</th>
+        <th *ngIf="role != 'Patient/Parent'">Parent ID</th>
+        <th *ngIf="role != 'Doctor'">Doctor ID</th>
         <th>Date & Time</th>
         <th>Notes</th>
+        <th *ngIf="role != 'Educator'"></th>
       </tr>
       </thead>
       <tbody>
       <tr *ngFor="let a of appointments">
-        <td>{{ a.id }}</td>
         <td>{{ a.child_name }}</td>
-        <td>{{ a.parent_id }}</td>
-        <td>{{ a.doctor_id }}</td>
+        <td *ngIf="role != 'Patient/Parent'">{{ a.parent_id }}</td>
+        <td *ngIf="role != 'Doctor'">{{ a.doctor_id }}</td>
         <td>{{ a.date_time | date:'short' }}</td>
         <td>{{ a.notes }}</td>
-        <td>
-          <button class="btn btn-sm btn-success" (click)="openModal2(a)">Approve</button>
+        <td *ngIf="role === 'Doctor'">
+          <button
+            class="btn btn-sm btn-success"
+            (click)="openModal2(a)"
+            *ngIf="role === 'Doctor' && !a.justified">
+            Approve
+          </button>
+        </td>
+        <td *ngIf="role === 'Patient/Parent'">
+          <button
+            class="btn btn-sm btn-danger"
+            (click)="cancelAppointment(a.id)"
+            *ngIf="isFutureDate(a.date_time) && !a.justified">
+            Cancel
+          </button>
         </td>
       </tr>
       </tbody>
@@ -33,7 +45,7 @@
   </div>
 
   <!-- Button to open modal -->
-  <button type="button" class="btn btn-primary mb-3" (click)="openModal()">
+  <button  *ngIf="role === 'Patient/Parent'" type="button" class="btn btn-primary mb-3" (click)="openModal()">
     Add Appointment
   </button>
 
@@ -56,17 +68,7 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Parent ID</label>
-<!--              <input type="text" class="form-control" formControlName="parentID">-->
-              <select class="form-control" formControlName="parent_id">
-                <option *ngFor="let parent of parents" [value]="parent.user_id">
-                  {{ parent.name }} ({{ parent.email }})
-                </option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Doctor ID</label>
+              <label class="form-label">Doctor</label>
 <!--              <input type="number" class="form-control" formControlName="doctorID">-->
               <select class="form-control" formControlName="doctor_id">
                 <option *ngFor="let doctor of doctors" [value]="doctor.user_id">
@@ -77,8 +79,12 @@
 
             <div class="mb-3">
               <label class="form-label">Date & Time</label>
-              <input type="datetime-local" class="form-control" formControlName="date_time">
+              <input type="datetime-local"
+                     class="form-control"
+                     formControlName="date_time"
+                     [min]="minDateTime">
             </div>
+
 
             <div class="mb-3">
               <label class="form-label">Notes</label>

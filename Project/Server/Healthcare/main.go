@@ -54,15 +54,19 @@ func main() {
 	medicalJustificationRepo := repository.NewMedicalJustificationRepository(db)
 	medicalJustificationHandler := handler.NewMedicalJustificationHandler(medicalJustificationRepo)
 
-	r.Handle("/medicalRecord/user/{userId}", http.HandlerFunc(medicalJustificationHandler.GetJustificationsForParent)).Methods("GET")
-	r.Handle("/getJustification", http.HandlerFunc(medicalJustificationHandler.GetJustifications)).Methods("GET")
+	r.Handle("/getAllJustifications", http.HandlerFunc(medicalJustificationHandler.GetAllJustifications)).Methods("GET")
+	r.Handle("/getJustificationsForParent/{userId}", http.HandlerFunc(medicalJustificationHandler.GetJustificationsForParent)).Methods("GET")
+	r.Handle("/getJustificationsForDoctor/{userId}", http.HandlerFunc(medicalJustificationHandler.GetJustificationsForDoctor)).Methods("GET")
 	r.Handle("/createJustification", http.HandlerFunc(medicalJustificationHandler.CreateJustification)).Methods("POST")
 
 	// ---- Appointment routes ----
 	r.Handle("/createAppointment", http.HandlerFunc(appointmentHandler.CreateAppointment)).Methods("POST")
-	r.Handle("/getAppointments/{id}", http.HandlerFunc(appointmentHandler.GetAppointments)).Methods("GET")
-	r.Handle("/getAppointments", http.HandlerFunc(appointmentHandler.GetAppointment)).Methods("GET")
+	r.Handle("/getAppointmentsByParent/{id}", http.HandlerFunc(appointmentHandler.GetAppointmentsByParent)).Methods("GET")
+	r.Handle("/getAppointmentsByDoctor/{id}", http.HandlerFunc(appointmentHandler.GetAppointmentsByDoctor)).Methods("GET")
+	r.Handle("/getAppointments", http.HandlerFunc(appointmentHandler.GetAppointments)).Methods("GET")
 	r.Handle("/getAppointmentsByDoctor", http.HandlerFunc(appointmentHandler.GetAppointmentsByDoctor)).Methods("GET")
+	r.HandleFunc("/cancelAppointment/{id}", appointmentHandler.CancelAppointment).Methods("DELETE")
+	r.HandleFunc("/justifyAppointment/{id}", appointmentHandler.JustifyAppointment).Methods("PUT")
 
 	//r.Handle("/medicalRecord/user/{userId}", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustificationsForParent))).Methods("GET")
 	//r.Handle("/getJustification", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustifications))).Methods("GET")

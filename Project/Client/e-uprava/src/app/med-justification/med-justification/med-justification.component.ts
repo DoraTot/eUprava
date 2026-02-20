@@ -24,7 +24,7 @@ export class MedJustificationComponent implements OnInit {
 
   authIdToken: string | null = null;
   role: string = "";
-  parent_id: string = "";
+  user_id: string = "";
 
   constructor(private fb: FormBuilder, private http: HttpClient, public auth: AuthService) {}
 
@@ -41,26 +41,27 @@ export class MedJustificationComponent implements OnInit {
       if (claims && claims.__raw) {
         this.authIdToken = claims.__raw;
         const role = claims['https://myapp.example/role'];
-        // console.log('Auth0 ID Token:', this.authIdToken);
         console.log('Auth0 Claims:', claims);
-        // console.log('User role:', role);
         this.role = role;
-        this.parent_id = claims['sub'];
-        console.log("ParentID: ", this.parent_id);
-        this.loadJustifications();
-
+        this.user_id = claims['sub'];
+        if (this.role == "Doctor") {
+          this.loadJustificationsForDoctor();
+        } else if (this.role != "Educator") {
+          this.loadJustificationsForParent();
+        }
       }
     });
 
-
-    console.log("LOAD medical justification for parent id:", this.parent_id);
-
   }
 
-  loadJustifications() {
-    const parentId = this.parent_id;
-    console.log("ParentID: ", parentId);
-    this.http.get<MedicalJustification[]>(`http://localhost:8081/getJustification?parentId=${parentId}`)
+  loadJustificationsForDoctor() {
+    this.http.get<MedicalJustification[]>(`http://localhost:8081/getJustificationsForDoctor/` + this.user_id)
+      .subscribe(data => this.justifications = data);
+    console.log(this.justifications);
+  }
+
+  loadJustificationsForParent() {
+    this.http.get<MedicalJustification[]>(`http://localhost:8081/getJustificationsForParent/` + this.user_id)
       .subscribe(data => this.justifications = data);
     console.log(this.justifications);
   }
@@ -71,7 +72,6 @@ export class MedJustificationComponent implements OnInit {
     const newJustification = this.justificationForm.value;
     this.http.post('http://localhost:8081/createJustification', newJustification)
       .subscribe(() => {
-        this.loadJustifications();
         this.justificationForm.reset();
       });
   }

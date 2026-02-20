@@ -1,7 +1,5 @@
 package model
 
-type AppointmentStatus string
-
 type Appointment struct {
 	ID        int    `json:"id" db:"id"`
 	ChildName string `json:"child_name" db:"child_name"`
@@ -9,4 +7,5 @@ type Appointment struct {
 	DoctorID  string `json:"doctor_id" db:"doctor_id"`
 	DateTime  string `json:"date_time" db:"date_time"`
 	Notes     string `json:"notes,omitempty" db:"notes"`
+	Justified bool   `json:"justified" db:"justified"`
 }

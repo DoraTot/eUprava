@@ -47,13 +47,13 @@ func (r *MedicalJustificationRepository) GetJustificationsByParent(parentID stri
 	return justifications, nil
 }
 
-func (r *MedicalJustificationRepository) GetAppointmentsByParent(parentID string) ([]model.MedicalJustification, error) {
+func (r *MedicalJustificationRepository) GetAppointmentsByDoctor(doctorID string) ([]model.MedicalJustification, error) {
 	query := `
 		SELECT id, child_name, doctor_id, parent_id, dated, reason
 		FROM medical_justifications
-		WHERE parent_id = ?
+		WHERE doctor_id = ?
 	`
-	rows, err := r.DB.Query(query, parentID)
+	rows, err := r.DB.Query(query, doctorID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,4 +69,28 @@ func (r *MedicalJustificationRepository) GetAppointmentsByParent(parentID string
 		appointments = append(appointments, a)
 	}
 	return appointments, nil
+}
+
+func (r *MedicalJustificationRepository) GetAllJustifications() ([]model.MedicalJustification, error) {
+	query := `
+		SELECT id, child_name, doctor_id, parent_id, dated, reason
+		FROM medical_justifications
+		
+		`
+	rows, err := r.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var justifications []model.MedicalJustification
+	for rows.Next() {
+		var a model.MedicalJustification
+		if err := rows.Scan(&a.ID, &a.ChildName, &a.DoctorID, &a.ParentID, &a.Date, &a.Reason); err != nil {
+			log.Println(err)
+			continue
+		}
+		justifications = append(justifications, a)
+	}
+	return justifications, nil
 }

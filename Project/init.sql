@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS appointments (
     parent_id VARCHAR(100) NOT NULL,
     doctor_id VARCHAR(100) NOT NULL,
     date_time DATETIME,
-    notes TEXT
+    notes TEXT,
+    justified BOOLEAN
     );
 
 CREATE TABLE IF NOT EXISTS medical_justifications (

@@ -2,10 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"main.go/model"
 	"main.go/repository"
 	"net/http"
-	"strconv"
 )
 
 type AppointmentHandler struct {
@@ -32,10 +32,10 @@ func (h *AppointmentHandler) CreateAppointment(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 }
 
-func (h *AppointmentHandler) GetAppointments(w http.ResponseWriter, r *http.Request) {
-	parentIDStr := r.URL.Query().Get("parentId")
-	parentID, err := strconv.Atoi(parentIDStr)
-	if err != nil {
+func (h *AppointmentHandler) GetAppointmentsByParent(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	parentID := vars["id"]
+	if parentID == "" {
 		http.Error(w, "Invalid parent ID", http.StatusBadRequest)
 		return
 	}
@@ -49,7 +49,7 @@ func (h *AppointmentHandler) GetAppointments(w http.ResponseWriter, r *http.Requ
 	json.NewEncoder(w).Encode(appointments)
 }
 
-func (h *AppointmentHandler) GetAppointment(w http.ResponseWriter, r *http.Request) {
+func (h *AppointmentHandler) GetAppointments(w http.ResponseWriter, r *http.Request) {
 
 	appointments, err := h.Repo.GetAppointments()
 	if err != nil {
@@ -62,10 +62,10 @@ func (h *AppointmentHandler) GetAppointment(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *AppointmentHandler) GetAppointmentsByDoctor(w http.ResponseWriter, r *http.Request) {
-	doctorIDStr := r.URL.Query().Get("doctorId")
-	doctorID, err := strconv.Atoi(doctorIDStr)
-	if err != nil {
-		http.Error(w, "Invalid doctor ID", http.StatusBadRequest)
+	vars := mux.Vars(r)
+	doctorID := vars["id"]
+	if doctorID == "" {
+		http.Error(w, "Missing doctor ID", http.StatusBadRequest)
 		return
 	}
 
@@ -76,4 +76,40 @@ func (h *AppointmentHandler) GetAppointmentsByDoctor(w http.ResponseWriter, r *h
 	}
 
 	json.NewEncoder(w).Encode(appointments)
+}
+
+func (h *AppointmentHandler) CancelAppointment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	appointmentID := vars["id"]
+	if appointmentID == "" {
+		http.Error(w, "Missing appointment ID", http.StatusBadRequest)
+		return
+	}
+
+	err := h.Repo.DeleteAppointment(appointmentID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "canceled"})
+}
+
+func (h *AppointmentHandler) JustifyAppointment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	appointmentID := vars["id"]
+	if appointmentID == "" {
+		http.Error(w, "Missing appointment ID", http.StatusBadRequest)
+		return
+	}
+
+	err := h.Repo.SetAppointmentJustified(appointmentID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "justified"})
 }

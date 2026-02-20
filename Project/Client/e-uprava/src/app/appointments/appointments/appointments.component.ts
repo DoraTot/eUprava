@@ -1,6 +1,8 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import {AuthService} from '@auth0/auth0-angular';
+import {Router} from '@angular/router';
 
 interface Appointment {
   id?: number;
@@ -9,6 +11,7 @@ interface Appointment {
   doctor_id: number;
   date_time: string;
   notes?: string;
+  justified: boolean;
 }
 
 @Component({
@@ -27,12 +30,39 @@ export class AppointmentsComponent implements OnInit {
   @ViewChild('appointmentModal2') modal2!: ElementRef;
 
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {}
+  constructor(private fb: FormBuilder, private http: HttpClient, private auth: AuthService) {}
+  authIdToken: string | null = null;
+  role: string = "";
+  user_id: string = "";
+  minDateTime: string = '';
+  selectedAppointmentId!: number;
 
   ngOnInit(): void {
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+
+    this.minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+    this.auth.idTokenClaims$.subscribe(claims => {
+      if (claims && claims.__raw) {
+        this.authIdToken = claims.__raw;
+        this.role = claims['https://myapp.example/role'];
+        this.user_id = claims['sub'];
+        if (this.role == "Doctor") {
+          this.loadAppointmentsByDoctor();
+        } else if (this.role != "Educator") {
+          this.loadAppointmentsByParent();
+        }
+      }
+    });
+
     this.appointmentForm = this.fb.group({
       child_name: ['', Validators.required],
-      parent_id: ["", Validators.required],
       doctor_id: [0, Validators.required],
       date_time: ['', Validators.required],
       notes: ['']
@@ -46,13 +76,16 @@ export class AppointmentsComponent implements OnInit {
       reason: ['']
     });
 
-    this.loadAppointments();
     this.fetchParentsDoctors();
   }
 
-  loadAppointments() {
-    const parentId = 1;
-    this.http.get<Appointment[]>(`http://localhost:8081/getAppointments`)
+  loadAppointmentsByParent() {
+    this.http.get<Appointment[]>(`http://localhost:8081/getAppointmentsByParent/` + this.user_id)
+      .subscribe(data => this.appointments = data);
+  }
+
+  loadAppointmentsByDoctor() {
+    this.http.get<Appointment[]>(`http://localhost:8081/getAppointmentsByDoctor/` + this.user_id)
       .subscribe(data => this.appointments = data);
   }
 
@@ -65,6 +98,8 @@ export class AppointmentsComponent implements OnInit {
 
 
   openModal2(appointment: Appointment) {
+    this.selectedAppointmentId = appointment.id!;
+
     const el = this.modal2.nativeElement;
     el.style.display = 'block';
     el.classList.add('show', 'd-block');
@@ -77,7 +112,6 @@ export class AppointmentsComponent implements OnInit {
       dated: appointment.date_time,
       reason: '',
     });
-
   }
 
   closeModal() {
@@ -100,9 +134,15 @@ export class AppointmentsComponent implements OnInit {
 
     const newAppointment = this.appointmentForm.value;
     console.log(newAppointment);
+    newAppointment.parent_id = this.user_id;
+    newAppointment.justified = false;
     this.http.post('http://localhost:8081/createAppointment', newAppointment)
       .subscribe(() => {
-        this.loadAppointments();
+        if (this.role == "Doctor") {
+          this.loadAppointmentsByDoctor();
+        } else {
+          this.loadAppointmentsByParent();
+        }
         this.closeModal();
         this.appointmentForm.reset();
       });
@@ -130,20 +170,31 @@ export class AppointmentsComponent implements OnInit {
 
     this.http.post('http://localhost:8081/createJustification', newMedicalRecord)
       .subscribe({
-        next: (res) => {
-          console.log('POST SUCCESS:', res);
-          this.loadAppointments();
-          this.closeModal();
-          this.medForm.reset();
+        next: () => {
+
+          this.justifyAppointment(this.selectedAppointmentId)
+            .subscribe(() => {
+
+              if (this.role == "Doctor") {
+                this.loadAppointmentsByDoctor();
+              } else {
+                this.loadAppointmentsByParent();
+              }
+
+              this.closeModal2();
+              this.medForm.reset();
+            });
+
         },
         error: (err) => {
           console.error('POST ERROR:', err);
         }
       });
-
-
   }
 
+  justifyAppointment(id: number) {
+    return this.http.put(`http://localhost:8081/justifyAppointment/${id}`, {});
+  }
 
   fetchParentsDoctors() {
     this.http.get<any[]>('http://localhost:8082/parents').subscribe(data => {
@@ -153,6 +204,23 @@ export class AppointmentsComponent implements OnInit {
       this.doctors = data;
     });
 
+  }
+
+  cancelAppointment(appointmentId: any) {
+    this.http.delete(`http://localhost:8081/cancelAppointment/${appointmentId}`)
+      .subscribe(() => {
+        if (this.role === 'Doctor') {
+          this.loadAppointmentsByDoctor();
+        } else {
+          this.loadAppointmentsByParent();
+        }
+      });
+  }
+
+  isFutureDate(dateStr: string): boolean {
+    const date = new Date(dateStr);
+    const now = new Date();
+    return date > now;
   }
 
 }

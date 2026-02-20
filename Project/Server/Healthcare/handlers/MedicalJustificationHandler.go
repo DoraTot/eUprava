@@ -31,14 +31,8 @@ func (h *MedicalJustificationHandler) CreateJustification(w http.ResponseWriter,
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *MedicalJustificationHandler) GetJustifications(w http.ResponseWriter, r *http.Request) {
-	parentID := r.URL.Query().Get("parentId")
-	if parentID == "" {
-		http.Error(w, "Missing parent ID", http.StatusBadRequest)
-		return
-	}
-
-	justifications, err := h.Repo.GetJustificationsByParent(parentID)
+func (h *MedicalJustificationHandler) GetAllJustifications(w http.ResponseWriter, r *http.Request) {
+	justifications, err := h.Repo.GetAllJustifications()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -53,7 +47,22 @@ func (h *MedicalJustificationHandler) GetJustificationsForParent(w http.Response
 	parentID := vars["userId"]
 	log.Println("Received parentID:", parentID)
 
-	justification, err := h.Repo.GetAppointmentsByParent(parentID)
+	justification, err := h.Repo.GetJustificationsByParent(parentID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(justification)
+}
+
+func (h *MedicalJustificationHandler) GetJustificationsForDoctor(w http.ResponseWriter, r *http.Request) {
+	//parentIDStr := r.URL.Query().Get("userId")
+	vars := mux.Vars(r)
+	doctorID := vars["userId"]
+	log.Println("Received doctorID:", doctorID)
+
+	justification, err := h.Repo.GetAppointmentsByDoctor(doctorID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
