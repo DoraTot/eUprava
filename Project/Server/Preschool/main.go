@@ -52,6 +52,11 @@ func main() {
 
 	attendanceRepo := repository.NewAttendanceRepo(db)
 	attendanceHandler := handlers.NewAttendanceHandler(attendanceRepo)
+	childrenRepo := repository.NewChildrenRepo(db)
+	if err := childrenRepo.EnsureTableExists(); err != nil {
+		log.Fatal("Cannot ensure children table:", err)
+	}
+	childrenHandler := handlers.NewChildrenHandler(childrenRepo)
 
 	r := mux.NewRouter()
 
@@ -65,8 +70,16 @@ func main() {
 	//r.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.PostRecord))).Methods(http.MethodPost)
 
 	r.HandleFunc("/attendance", attendanceHandler.GetRecords).Methods("GET")
+	r.HandleFunc("/attendanceByParent/{id}", attendanceHandler.GetRecordsByParent).Methods("GET")
 	r.HandleFunc("/attendance", attendanceHandler.PostRecord).Methods("POST")
 	r.HandleFunc("/attendance/pickUp", attendanceHandler.PickUp).Methods("POST")
+	r.HandleFunc("/attendance/justify", attendanceHandler.JustifyAttendance).Methods("POST")
+
+	r.HandleFunc("/children/add", childrenHandler.Create).Methods("POST")
+	r.HandleFunc("/enrollChild", childrenHandler.EnrollChild).Methods("POST")
+	r.HandleFunc("/examCompleted", childrenHandler.ExamCompleted).Methods("POST")
+	r.HandleFunc("/children/getByParentID/{id}", childrenHandler.GetByParentID).Methods("GET")
+	r.HandleFunc("/children/getAll", childrenHandler.GetAll).Methods("GET")
 
 	//http.Handle("/attendance", enableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	//	switch r.Method {

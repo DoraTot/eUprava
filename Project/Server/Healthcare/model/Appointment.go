@@ -8,4 +8,5 @@ type Appointment struct {
 	DateTime  string `json:"date_time" db:"date_time"`
 	Notes     string `json:"notes,omitempty" db:"notes"`
 	Justified bool   `json:"justified" db:"justified"`
+	SysExam   bool   `json:"sys_exam" db:"sys_exam"`
 }

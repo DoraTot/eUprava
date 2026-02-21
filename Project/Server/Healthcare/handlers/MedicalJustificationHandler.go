@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
@@ -24,10 +25,31 @@ func (h *MedicalJustificationHandler) CreateJustification(w http.ResponseWriter,
 		return
 	}
 
-	if err := h.Repo.CreateJustification(&j); err != nil {
+	createdJ, err := h.Repo.CreateJustification(&j)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	attendanceURL := "http://app:8080/attendance/justify"
+	payload := map[string]string{
+		"parent":     createdJ.ParentID,
+		"child":      createdJ.ChildName,
+		"valid_from": createdJ.ValidFrom,
+		"valid_to":   createdJ.ValidTo,
+	}
+	payloadBytes, _ := json.Marshal(payload)
+
+	resp, err := http.Post(attendanceURL, "application/json", bytes.NewReader(payloadBytes))
+	if err != nil {
+		log.Println("Failed to notify Attendance service:", err)
+	} else {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			log.Println("Attendance service returned status:", resp.Status)
+		}
+	}
+
 	w.WriteHeader(http.StatusCreated)
 }
 

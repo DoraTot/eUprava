@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"log"
 	"main.go/model"
 	"main.go/repository"
 	"net/http"
+	"time"
 )
 
 type AppointmentHandler struct {
@@ -23,10 +26,33 @@ func (h *AppointmentHandler) CreateAppointment(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if err := h.Repo.CreateAppointment(&a); err != nil {
+	createdA, err := h.Repo.CreateAppointment(&a)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	if a.SysExam {
+		sysExam := model.SystematicExam{
+			ChildName:     a.ChildName,
+			ParentID:      a.ParentID,
+			DoctorID:      a.DoctorID,
+			Date:          time.Now(),
+			ValidUntil:    nil,
+			Status:        model.ExamScheduled,
+			AppointmentID: createdA.ID,
+		}
+
+		jsonData, _ := json.Marshal(sysExam)
+		resp, err := http.Post("http://localhost:8081/createSystematicExam",
+			"application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			log.Println("Failed to call health service:", err)
+			return
+		}
+		defer resp.Body.Close()
+	}
+
 	//w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})

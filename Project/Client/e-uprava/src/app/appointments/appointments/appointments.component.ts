@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import {AuthService} from '@auth0/auth0-angular';
 import {Router} from '@angular/router';
@@ -12,6 +12,7 @@ interface Appointment {
   date_time: string;
   notes?: string;
   justified: boolean;
+  sys_exam: boolean;
 }
 
 @Component({
@@ -25,6 +26,7 @@ export class AppointmentsComponent implements OnInit {
     medForm: FormGroup = new FormGroup({});
   parents: any[] = [];
   doctors: any[] = [];
+  children: any[] = [];
 
   @ViewChild('appointmentModal') modal!: ElementRef;
   @ViewChild('appointmentModal2') modal2!: ElementRef;
@@ -53,6 +55,8 @@ export class AppointmentsComponent implements OnInit {
         this.authIdToken = claims.__raw;
         this.role = claims['https://myapp.example/role'];
         this.user_id = claims['sub'];
+        this.fetchParentsDoctors();
+
         if (this.role == "Doctor") {
           this.loadAppointmentsByDoctor();
         } else if (this.role != "Educator") {
@@ -65,18 +69,29 @@ export class AppointmentsComponent implements OnInit {
       child_name: ['', Validators.required],
       doctor_id: [0, Validators.required],
       date_time: ['', Validators.required],
-      notes: ['']
+      notes: [''],
+      sys_exam: [false]
     });
 
     this.medForm = this.fb.group({
       child_name: ['', Validators.required],
       parent_id: ["", Validators.required],
       doctor_id: ["", Validators.required],
-      dated: ['', Validators.required],
+      valid_from: ['', Validators.required],
+      valid_to: ['', Validators.required],
       reason: ['']
+    }, { validators: this.dateRangeValidator
     });
 
-    this.fetchParentsDoctors();
+  }
+
+  dateRangeValidator(group: AbstractControl) {
+    const from = group.get('validFrom')?.value;
+    const to = group.get('validTo')?.value;
+
+    if (!from || !to) return null;
+
+    return new Date(from) <= new Date(to) ? null : { dateRangeInvalid: true };
   }
 
   loadAppointmentsByParent() {
@@ -109,7 +124,8 @@ export class AppointmentsComponent implements OnInit {
       child_name: appointment.child_name,
       parent_id: appointment.parent_id,
       doctor_id: appointment.doctor_id,
-      dated: appointment.date_time,
+      valid_from: '',
+      valid_to: '',
       reason: '',
     });
   }
@@ -151,13 +167,6 @@ export class AppointmentsComponent implements OnInit {
   approve(){
     // console.log('Form values:', this.medForm.value);
     const newMedicalRecord = this.medForm.value;
-    if (newMedicalRecord.dated) {
-      const date = new Date(newMedicalRecord.dated);
-      const year = date.getFullYear();
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const day = date.getDate().toString().padStart(2, '0');
-      newMedicalRecord.dated = `${year}-${month}-${day}`;
-    }
 
     console.log('Form values:', newMedicalRecord);
 
@@ -203,7 +212,9 @@ export class AppointmentsComponent implements OnInit {
     this.http.get<any[]>('http://localhost:8082/doctors').subscribe(data => {
       this.doctors = data;
     });
-
+    this.http.get<any[]>(`http://localhost:8080/children/getByParentID/${this.user_id}`).subscribe(data => {
+      this.children = data;
+    });
   }
 
   cancelAppointment(appointmentId: any) {
@@ -223,4 +234,36 @@ export class AppointmentsComponent implements OnInit {
     return date > now;
   }
 
+  approveSysExam(appointmentId: any) {
+    if (!appointmentId) return;
+
+    const payload = { status: 'COMPLETED' };
+
+    this.http.post(`http://localhost:8081/updateSystematicExam/` + appointmentId, payload)
+      .subscribe({
+        next: () => {
+          this.justifyAppointment(appointmentId).subscribe({
+            next: () => {
+              if (this.role === "Doctor") {
+                this.loadAppointmentsByDoctor();
+              } else {
+                this.loadAppointmentsByParent();
+              }
+            },
+            error: (err) => {
+              console.error("Failed to justify appointment:", err);
+            }
+          });
+          if (this.role === "Doctor") {
+            this.loadAppointmentsByDoctor();
+          } else {
+            this.loadAppointmentsByParent();
+          }
+        },
+        error: (err) => {
+          console.error('Failed to update systematic exam status:', err);
+        }
+      });
+
+  }
 }

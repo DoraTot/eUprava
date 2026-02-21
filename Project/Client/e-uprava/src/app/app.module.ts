@@ -12,6 +12,8 @@ import { HomeComponent } from './home/home/home.component';
 import { AppointmentsComponent } from './appointments/appointments/appointments.component';
 import { MedJustificationComponent } from './med-justification/med-justification/med-justification.component';
 import { HeaderComponent } from './header/header/header.component';
+import { SystematicExamComponent } from './systematic-exam/systematic-exam.component';
+import { EnrollmentComponent } from './enrollment/enrollment.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +23,9 @@ import { HeaderComponent } from './header/header/header.component';
     HomeComponent,
     AppointmentsComponent,
     MedJustificationComponent,
-    HeaderComponent
+    HeaderComponent,
+    SystematicExamComponent,
+    EnrollmentComponent
   ],
   imports: [
     BrowserModule,

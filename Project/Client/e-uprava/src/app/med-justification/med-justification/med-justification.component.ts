@@ -8,7 +8,8 @@ interface MedicalJustification {
   child_name: string;
   doctor_id: string;
   parent_id: string;
-  dated: string;
+  valid_from: string;
+  valid_to: string;
   reason: string;
 }
 
@@ -48,10 +49,18 @@ export class MedJustificationComponent implements OnInit {
           this.loadJustificationsForDoctor();
         } else if (this.role != "Educator") {
           this.loadJustificationsForParent();
+        } else {
+          this.loadAllJustifications();
         }
       }
     });
 
+  }
+
+  loadAllJustifications() {
+    this.http.get<MedicalJustification[]>(`http://localhost:8081/getAllJustifications`)
+      .subscribe(data => this.justifications = data);
+    console.log(this.justifications);
   }
 
   loadJustificationsForDoctor() {

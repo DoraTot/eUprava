@@ -23,13 +23,20 @@
         <td *ngIf="role != 'Doctor'">{{ a.doctor_id }}</td>
         <td>{{ a.date_time | date:'short' }}</td>
         <td>{{ a.notes }}</td>
-        <td *ngIf="role === 'Doctor'">
+        <td style="text-align: center" *ngIf="role === 'Doctor'">
           <button
             class="btn btn-sm btn-success"
             (click)="openModal2(a)"
-            *ngIf="role === 'Doctor' && !a.justified">
-            Approve
+            *ngIf="!a.justified && !a.sys_exam">
+            Provide justification
           </button>
+          <button
+            class="btn btn-sm btn-success" style="background-color: cadetblue"
+            (click)="approveSysExam(a.id)"
+            *ngIf="a.sys_exam && !a.justified">
+            Approve systematic exam
+          </button>
+          <label *ngIf="a.justified">Completed</label>
         </td>
         <td *ngIf="role === 'Patient/Parent'">
           <button
@@ -63,8 +70,12 @@
           <form [formGroup]="appointmentForm" (ngSubmit)="addAppointment()">
 
             <div class="mb-3">
-              <label class="form-label">Child Name</label>
-              <input type="text" class="form-control" formControlName="child_name" placeholder="Child Name">
+              <label class="form-label">Child's Name</label>
+              <select class="form-control" formControlName="child_name">
+                <option *ngFor="let child of children" [value]="child.name">
+                  {{ child.name }}
+                </option>
+              </select>
             </div>
 
             <div class="mb-3">
@@ -85,6 +96,10 @@
                      [min]="minDateTime">
             </div>
 
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" formControlName="sys_exam" id="sysExamCheck">
+              <label class="form-check-label" for="sysExamCheck">Systematic Exam</label>
+            </div>
 
             <div class="mb-3">
               <label class="form-label">Notes</label>
@@ -111,6 +126,16 @@
 
         <div class="modal-body">
           <form [formGroup]="medForm" (ngSubmit)="approve()">
+
+            <div class="mb-3">
+              <label class="form-label">Valid From</label>
+              <input type="date" class="form-control" formControlName="valid_from">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Valid To</label>
+              <input type="date" class="form-control" formControlName="valid_to">
+            </div>
 
             <div class="mb-3">
               <label class="form-label">Notes</label>

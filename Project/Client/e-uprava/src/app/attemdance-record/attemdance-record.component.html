@@ -14,7 +14,7 @@
         <th>Date</th>
         <th>Missing</th>
         <th>Justified</th>
-        <th>Actions</th>
+        <th>Picked up</th>
       </tr>
       </thead>
       <tbody>
@@ -26,17 +26,12 @@
         <td>{{ record.missing ? 'Yes' : 'No' }}</td>
         <td>{{ record.justified ? 'Yes' : 'No' }}</td>
         <td>{{ record.pickedUp ? 'Yes' : 'No' }}</td>
-        <td>
-<!--          <button *ngIf="role === 'Patient/Parent'" class="btn btn-sm btn-success" (click)="openModal2(record.id)">Justify</button>-->
-          <button class="btn btn-sm btn-success" (click)="openModal2(record.id)">Justify</button>
-        </td>
       </tr>
       </tbody>
     </table>
   </div>
 
-<!--  <button *ngIf="role === 'Educator'" type="button" class="btn btn-primary mb-3" (click)="openModal()">-->
-    <button type="button" class="btn btn-primary mb-3" (click)="openModal()">
+  <button *ngIf="role === 'Educator'" type="button" class="btn btn-primary mb-3" (click)="openModal()">
     Add Attendance Record
   </button>
 
@@ -77,7 +72,7 @@
             </div>
 
             <div class="mb-3">
-              <input class="form-check-input" type="checkbox" formControlName="missing" id="pickedUp">
+              <input class="form-check-input" type="checkbox" formControlName="pickedUp" id="pickedUp">
               <label class="form-check-label" for="pickedUp">Picked up</label>
             </div>
 

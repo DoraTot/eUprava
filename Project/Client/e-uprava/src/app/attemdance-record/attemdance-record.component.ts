@@ -56,15 +56,18 @@ export class AttemdanceRecordComponent implements OnInit {
         console.log('Auth0 ID Token:', this.authIdToken);
         console.log('Auth0 Claims:', claims);
         console.log('User role:', role);
+        this.userId = claims['sub'];
         this.role = role;
-        // this.userId = claims.sub;
-
+        if (this.role == "Educator") {
+          this.loadRecords();
+        } else if (this.role != "Doctor") {
+          this.loadRecordsByParent();
+        }
       }
     });
 
 
     this.fetchParents();
-    this.loadRecords();
     // this.loadMedicalRecords(this.userId)
   }
 
@@ -115,6 +118,11 @@ export class AttemdanceRecordComponent implements OnInit {
       .subscribe(res => this.records = res);
   }
 
+  loadRecordsByParent() {
+    this.http.get<any[]>('http://localhost:8080/attendanceByParent/' + this.userId)
+      .subscribe(res => this.records = res);
+  }
+
   openModal() {
     const el = this.modal.nativeElement;
     el.style.display = 'block';
@@ -137,6 +145,7 @@ export class AttemdanceRecordComponent implements OnInit {
       const dt = new Date(newRecord.dateTime);
       newRecord.dateTime = dt.toISOString().slice(0, 19).replace('T', ' ');
     }
+    newRecord.justified = false;
     console.log(newRecord);
     this.http.post('http://localhost:8080/attendance', newRecord)
       .subscribe({

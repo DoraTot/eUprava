@@ -10,13 +10,16 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/attendance" routerLinkActive="active">Attendance</a>
+          <a class="nav-link" *ngIf="role != 'Doctor'" routerLink="/enrollment" routerLinkActive="active">Enrollment</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" *ngIf="role != 'Doctor'" routerLink="/attendance" routerLinkActive="active">Attendance</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/medicalJustification" routerLinkActive="active">Medical Justifications</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/appointments" routerLinkActive="active">Appointments</a>
+          <a class="nav-link" *ngIf="role != 'Educator'" routerLink="/appointments" routerLinkActive="active">Appointments</a>
         </li>
       </ul>
 

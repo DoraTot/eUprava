@@ -33,9 +33,43 @@ func (r *AttendanceRepo) GetAllAttendance() ([]model.AttendanceRecord, error) {
 	return records, nil
 }
 
-func (r *AttendanceRepo) InsertAttendance(child string, parentAuth0ID string, date time.Time, missing bool, pickedUp bool) (int64, error) {
-	query := `INSERT INTO attendance_record (child, parent_auth0_id, date, missing, picked_up) VALUES (?, ?, ?, ?, ?)`
-	res, err := r.DB.Exec(query, child, parentAuth0ID, date, missing, pickedUp)
+func (r *AttendanceRepo) GetAllAttendanceByParent(parentID string) ([]model.AttendanceRecord, error) {
+	query := `
+		SELECT id, child, parent_auth0_id, date, missing, justified, picked_up
+		FROM attendance_record
+		WHERE parent_auth0_id = ?
+		ORDER BY date DESC
+	`
+
+	rows, err := r.DB.Query(query, parentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var records []model.AttendanceRecord
+	for rows.Next() {
+		var rec model.AttendanceRecord
+		if err := rows.Scan(
+			&rec.ID,
+			&rec.Child,
+			&rec.Parent,
+			&rec.Date,
+			&rec.Missing,
+			&rec.Justified,
+			&rec.PickedUp,
+		); err != nil {
+			return nil, err
+		}
+		records = append(records, rec)
+	}
+
+	return records, nil
+}
+
+func (r *AttendanceRepo) InsertAttendance(child string, parentAuth0ID string, date time.Time, missing bool, pickedUp bool, justified bool) (int64, error) {
+	query := `INSERT INTO attendance_record (child, parent_auth0_id, date, missing, picked_up, justified) VALUES (?, ?, ?, ?, ?, ?)`
+	res, err := r.DB.Exec(query, child, parentAuth0ID, date, missing, pickedUp, justified)
 	if err != nil {
 		return 0, err
 	}
@@ -65,4 +99,19 @@ func (r *AttendanceRepo) PickUp(parentAuth0ID string, date time.Time, pickedUp b
 	}
 
 	return rowsAffected, nil
+}
+
+func (r *AttendanceRepo) JustifyAttendance(parentID, childID string, validFrom, validTo time.Time) (int64, error) {
+	query := `
+		UPDATE attendance_record
+		SET justified = true
+		WHERE parent_auth0_id = ? AND child = ? AND missing = true
+		  AND date BETWEEN ? AND ?
+	`
+	res, err := r.DB.Exec(query, parentID, childID, validFrom, validTo)
+	if err != nil {
+		return 0, err
+	}
+
+	return res.RowsAffected()
 }

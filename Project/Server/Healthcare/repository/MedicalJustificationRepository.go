@@ -14,18 +14,28 @@ func NewMedicalJustificationRepository(db *sql.DB) *MedicalJustificationReposito
 	return &MedicalJustificationRepository{DB: db}
 }
 
-func (r *MedicalJustificationRepository) CreateJustification(j *model.MedicalJustification) error {
+func (r *MedicalJustificationRepository) CreateJustification(j *model.MedicalJustification) (*model.MedicalJustification, error) {
 	query := `
-		INSERT INTO medical_justifications (child_name, doctor_id, parent_id, dated, reason)
-		VALUES (?, ?, ?, ?, ?)
+		INSERT INTO medical_justifications (child_name, doctor_id, parent_id, valid_from, valid_to, reason)
+		VALUES (?, ?, ?, ?, ?, ?)
 	`
-	_, err := r.DB.Exec(query, j.ChildName, j.DoctorID, j.ParentID, j.Date, j.Reason)
-	return err
+	res, err := r.DB.Exec(query, j.ChildName, j.DoctorID, j.ParentID, j.ValidFrom, j.ValidTo, j.Reason)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	j.ID = int(id)
+	return j, nil
 }
 
 func (r *MedicalJustificationRepository) GetJustificationsByParent(parentID string) ([]model.MedicalJustification, error) {
 	query := `
-		SELECT id, child_name, doctor_id, parent_id, dated, reason
+		SELECT id, child_name, doctor_id, parent_id, valid_from, valid_to, reason
 		FROM medical_justifications
 		WHERE parent_id = ?
 	`
@@ -38,7 +48,7 @@ func (r *MedicalJustificationRepository) GetJustificationsByParent(parentID stri
 	var justifications []model.MedicalJustification
 	for rows.Next() {
 		var j model.MedicalJustification
-		if err := rows.Scan(&j.ID, &j.ChildName, &j.DoctorID, &j.ParentID, &j.Date, &j.Reason); err != nil {
+		if err := rows.Scan(&j.ID, &j.ChildName, &j.DoctorID, &j.ParentID, &j.ValidFrom, &j.ValidTo, &j.Reason); err != nil {
 			log.Println(err)
 			continue
 		}
@@ -49,7 +59,7 @@ func (r *MedicalJustificationRepository) GetJustificationsByParent(parentID stri
 
 func (r *MedicalJustificationRepository) GetAppointmentsByDoctor(doctorID string) ([]model.MedicalJustification, error) {
 	query := `
-		SELECT id, child_name, doctor_id, parent_id, dated, reason
+		SELECT id, child_name, doctor_id, parent_id, valid_from, valid_to, reason
 		FROM medical_justifications
 		WHERE doctor_id = ?
 	`
@@ -62,7 +72,7 @@ func (r *MedicalJustificationRepository) GetAppointmentsByDoctor(doctorID string
 	var appointments []model.MedicalJustification
 	for rows.Next() {
 		var a model.MedicalJustification
-		if err := rows.Scan(&a.ID, &a.ChildName, &a.DoctorID, &a.ParentID, &a.Date, &a.Reason); err != nil {
+		if err := rows.Scan(&a.ID, &a.ChildName, &a.DoctorID, &a.ParentID, &a.ValidFrom, &a.ValidTo, &a.Reason); err != nil {
 			log.Println(err)
 			continue
 		}
@@ -73,7 +83,7 @@ func (r *MedicalJustificationRepository) GetAppointmentsByDoctor(doctorID string
 
 func (r *MedicalJustificationRepository) GetAllJustifications() ([]model.MedicalJustification, error) {
 	query := `
-		SELECT id, child_name, doctor_id, parent_id, dated, reason
+		SELECT id, child_name, doctor_id, parent_id, valid_from, valid_to, reason
 		FROM medical_justifications
 		
 		`
@@ -86,7 +96,7 @@ func (r *MedicalJustificationRepository) GetAllJustifications() ([]model.Medical
 	var justifications []model.MedicalJustification
 	for rows.Next() {
 		var a model.MedicalJustification
-		if err := rows.Scan(&a.ID, &a.ChildName, &a.DoctorID, &a.ParentID, &a.Date, &a.Reason); err != nil {
+		if err := rows.Scan(&a.ID, &a.ChildName, &a.DoctorID, &a.ParentID, &a.ValidFrom, &a.ValidTo, &a.Reason); err != nil {
 			log.Println(err)
 			continue
 		}

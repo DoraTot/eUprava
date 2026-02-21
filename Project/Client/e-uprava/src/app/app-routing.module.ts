@@ -5,6 +5,7 @@ import {AttemdanceRecordComponent} from './attemdance-record/attemdance-record.c
 import {HomeComponent} from './home/home/home.component';
 import {AppointmentsComponent} from './appointments/appointments/appointments.component';
 import {MedJustificationComponent} from './med-justification/med-justification/med-justification.component';
+import {EnrollmentComponent} from './enrollment/enrollment.component';
 
 
 export const routes: Routes = [
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'appointments', component: AppointmentsComponent },
   { path: 'medicalJustification', component: MedJustificationComponent },
+  { path: 'enrollment', component: EnrollmentComponent },
 
 ];
 

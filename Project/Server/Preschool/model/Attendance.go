@@ -1,7 +1,5 @@
 package model
 
-type UserType string
-
 //const (
 //	Patient UserType = "Patient"
 //	Doctor  UserType = "Doctor"

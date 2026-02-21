@@ -1,0 +1,45 @@
+<div class="container my-4">
+
+
+
+
+  <h3>Children</h3>
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>Enrollment Status</th>
+      <th>Systematic Exam Passed</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let child of children">
+      <td>{{ child.name }}</td>
+      <td>{{ child.enrolled }}</td>
+      <td>
+        <span *ngIf="child.exam_done" class="text-success">✔</span>
+        <span *ngIf="!child.exam_done" class="text-danger">✖</span>
+      </td>
+      <td>
+        <button *ngIf="role === 'Patient/Parent' && child.enrolled != 'ENROLLED'" class="btn btn-sm btn-success" (click)="enrollChild(child.name)">
+          Enroll
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+<br><br><br>
+  <form *ngIf="role === 'Patient/Parent'" [formGroup]="enrollmentForm" (ngSubmit)="addChild()" class="mb-3">
+    <div class="mb-2">
+      <label for="childName" class="form-label">Child Name</label>
+      <input id="childName" type="text" class="form-control" formControlName="name" placeholder="Enter child's name">
+    </div>
+    <button type="submit" class="btn btn-primary" [disabled]="enrollmentForm.invalid">
+      Add
+    </button>
+  </form>
+  <div *ngIf="showToast" class="toasttt">
+    {{ toastMessage }}
+  </div>
+</div>
