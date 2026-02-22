@@ -55,6 +55,10 @@
             [routerLink]="['/statistics', record.child]">
             View Statistics for this child
           </button>
+        <td>{{ record.picked_up ? 'Yes' : 'No' }}</td>
+        <td>
+          <button type="button" *ngIf="role === 'Educator'" class="btn btn-secondary me-2" (click)="pickUp(record)">Pick Up</button>
+ pickUpFeature
         </td>
       </tr>
       </tbody>
