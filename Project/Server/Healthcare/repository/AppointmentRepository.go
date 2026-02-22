@@ -14,6 +14,28 @@ func NewAppointmentRepository(db *sql.DB) *AppointmentRepository {
 	return &AppointmentRepository{DB: db}
 }
 
+func (r *AppointmentRepository) EnsureTableExists() error {
+	query := `
+	CREATE TABLE IF NOT EXISTS appointments (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		child_name VARCHAR(255) NOT NULL,
+		parent_id VARCHAR(255) NOT NULL,
+		doctor_id VARCHAR(255) NOT NULL,
+		date_time DATETIME NOT NULL,
+		notes VARCHAR(512),
+		justified BOOLEAN NOT NULL DEFAULT FALSE,
+		sys_exam BOOLEAN NOT NULL DEFAULT FALSE
+	);
+	`
+
+	_, err := r.DB.Exec(query)
+	if err != nil {
+		log.Println("Failed to create appointments table:", err)
+	}
+
+	return err
+}
+
 func (r *AppointmentRepository) CreateAppointment(a *model.Appointment) (*model.Appointment, error) {
 	query := `
 		INSERT INTO appointments (child_name, parent_id, doctor_id, date_time, notes, justified, sys_exam)

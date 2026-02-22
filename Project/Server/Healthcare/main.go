@@ -49,9 +49,15 @@ func main() {
 	r := mux.NewRouter()
 
 	appointmentRepo := repository.NewAppointmentRepository(db)
+	if err := appointmentRepo.EnsureTableExists(); err != nil {
+		log.Fatal("Cannot ensure med justification table:", err)
+	}
 	appointmentHandler := handler.NewAppointmentHandler(appointmentRepo)
 
 	medicalJustificationRepo := repository.NewMedicalJustificationRepository(db)
+	if err := medicalJustificationRepo.EnsureTableExists(); err != nil {
+		log.Fatal("Cannot ensure med justification table:", err)
+	}
 	medicalJustificationHandler := handler.NewMedicalJustificationHandler(medicalJustificationRepo)
 
 	sysExamRepo := repository.NewSystematicExamRepository(db)

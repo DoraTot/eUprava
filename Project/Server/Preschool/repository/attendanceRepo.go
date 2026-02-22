@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"log"
 	"main.go/model"
 	"time"
 )
@@ -12,6 +13,26 @@ type AttendanceRepo struct {
 
 func NewAttendanceRepo(db *sql.DB) *AttendanceRepo {
 	return &AttendanceRepo{DB: db}
+}
+
+func (r *AttendanceRepo) EnsureTableExists() error {
+	query := `
+	CREATE TABLE IF NOT EXISTS attendance_record (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		child VARCHAR(255) NOT NULL,
+		parent_auth0_id VARCHAR(255) NOT NULL,
+		date DATETIME NOT NULL,
+		missing BOOLEAN NOT NULL DEFAULT FALSE,
+		justified BOOLEAN NOT NULL DEFAULT FALSE,
+		picked_up BOOLEAN NOT NULL DEFAULT FALSE
+	);`
+
+	_, err := r.DB.Exec(query)
+	if err != nil {
+		log.Println("Failed to create attendance_record table:", err)
+	}
+
+	return err
 }
 
 func (r *AttendanceRepo) GetAllAttendance() ([]model.AttendanceRecord, error) {

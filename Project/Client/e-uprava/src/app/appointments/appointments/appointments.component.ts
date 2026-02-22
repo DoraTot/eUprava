@@ -152,8 +152,8 @@ export class AppointmentsComponent implements OnInit {
       c => c.name === selectedChildName
     );
 
-    if (sysExam && selectedChild?.enrolled !== 'EXAM_EXPIRED') {
-      alert('Systematic exam can only be scheduled if systematic exam is expired.');
+    if (sysExam && selectedChild?.enrolled === 'ENROLLED') {
+      alert('Systematic exam can only be scheduled if systematic exam is expired or being done for the first time.');
       return;
     }
 

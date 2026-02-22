@@ -48,7 +48,7 @@ func (h *AppointmentHandler) CreateAppointment(w http.ResponseWriter, r *http.Re
 			return
 		}
 
-		if statusResponse.Status != "EXAM_EXPIRED" {
+		if statusResponse.Status == "ENROLLED" {
 			http.Error(w, "Systematic exam not allowed for this child", http.StatusBadRequest)
 			return
 		}

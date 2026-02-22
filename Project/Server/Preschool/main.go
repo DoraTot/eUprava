@@ -51,6 +51,9 @@ func main() {
 	//userHandler := handlers.NewUserHandler(userRepo)
 
 	attendanceRepo := repository.NewAttendanceRepo(db)
+	if err := attendanceRepo.EnsureTableExists(); err != nil {
+		log.Fatal("Cannot ensure attendance table:", err)
+	}
 	attendanceHandler := handlers.NewAttendanceHandler(attendanceRepo)
 	childrenRepo := repository.NewChildrenRepo(db)
 	if err := childrenRepo.EnsureTableExists(); err != nil {

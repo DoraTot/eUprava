@@ -14,6 +14,27 @@ func NewMedicalJustificationRepository(db *sql.DB) *MedicalJustificationReposito
 	return &MedicalJustificationRepository{DB: db}
 }
 
+func (r *MedicalJustificationRepository) EnsureTableExists() error {
+	query := `
+	CREATE TABLE IF NOT EXISTS medical_justifications (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		child_name VARCHAR(255) NOT NULL,
+		doctor_id VARCHAR(255) NOT NULL,
+		parent_id VARCHAR(255) NOT NULL,
+		valid_from DATETIME NOT NULL,
+		valid_to DATETIME NOT NULL,
+		reason VARCHAR(512)
+	);
+	`
+
+	_, err := r.DB.Exec(query)
+	if err != nil {
+		log.Println("Failed to create medical_justifications table:", err)
+	}
+
+	return err
+}
+
 func (r *MedicalJustificationRepository) CreateJustification(j *model.MedicalJustification) (*model.MedicalJustification, error) {
 	query := `
 		INSERT INTO medical_justifications (child_name, doctor_id, parent_id, valid_from, valid_to, reason)
