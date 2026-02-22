@@ -1,1 +1,78 @@
-<p>home works!</p>
+<div class="container my-5">
+
+  <h2 class="mb-4 text-center">Welcome to Preschool Portal</h2>
+
+  <div class="row g-4">
+
+    <div *ngIf="role != 'Doctor'" class="col-md-6 col-lg-3">
+      <div class="card  h-100 text-center p-3">
+        <div class="card-body">
+          <h5 class="card-title">🧒 Enrollment</h5>
+          <p *ngIf="role === 'Patient/Parent'" class="card-text">
+            Add and manage your child's preschool enrollment.
+          </p>
+          <p *ngIf="role === 'Educator'" class="card-text">
+            Review preschool enrollment records.
+          </p>
+          <button class="btn btn-outline-primary w-100"
+                  routerLink="/enrollment">
+            Go to Enrollment
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="role != 'Doctor'" class="col-md-6 col-lg-3">
+      <div class="card  h-100 text-center p-3">
+        <div class="card-body">
+          <h5 class="card-title">📋 Attendance</h5>
+          <p *ngIf="role === 'Patient/Parent'" class="card-text">
+            View today's attendance and track attendance history.
+          </p>
+          <p *ngIf="role === 'Educator'" class="card-text">
+            Manage today's attendance and track attendance history.
+          </p>
+          <button class="btn btn-outline-success w-100"
+                  routerLink="/attendance">
+            View Attendance
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="role != 'Educator'" class="col-md-6 col-lg-3">
+      <div class="card  h-100 text-center p-3">
+        <div class="card-body">
+          <h5 class="card-title">🩺 Doctor Appointments</h5>
+          <p *ngIf="role === 'Patient/Parent'" class="card-text">
+            Schedule and manage medical appointments for your child.
+          </p>
+          <p *ngIf="role === 'Doctor'" class="card-text">
+            Review scheduled appointments and manage medical justifications or systematic exam approvals.
+          </p>
+          <button class="btn btn-outline-info w-100"
+                  routerLink="/appointments">
+            Manage Appointments
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card  h-100 text-center p-3">
+        <div class="card-body">
+          <h5 class="card-title">📄 Medical Justifications</h5>
+          <p class="card-text">
+            Review medical approvals, absence justifications & download justifications as PDF.
+          </p>
+          <button class="btn btn-outline-dark w-100"
+                  routerLink="/medicalJustification">
+            View Justifications
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

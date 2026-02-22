@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {AuthService} from '@auth0/auth0-angular';
@@ -10,6 +10,7 @@ interface Child {
   exam_done: boolean;
   enrolled: string;
 }
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-enrollment',
@@ -17,6 +18,8 @@ interface Child {
   styleUrl: './enrollment.component.css'
 })
 export class EnrollmentComponent implements OnInit {
+  @ViewChild('addChildModal') addChildModal!: ElementRef;
+
   children: Child[] = [];
   enrollmentForm!: FormGroup;
   user_id: string = '';
@@ -83,6 +86,11 @@ export class EnrollmentComponent implements OnInit {
             exam_done: res.exam_done,
             enrolled: 'PENDING'
           });
+
+          const modalEl = this.addChildModal.nativeElement;
+          const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+          modalInstance.hide();
+
           this.enrollmentForm.reset();
         },
         error: err => console.error('Failed to create child:', err)

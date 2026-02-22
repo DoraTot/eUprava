@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"main.go/model"
 	"time"
@@ -54,6 +55,30 @@ func (r *AttendanceRepo) GetAllAttendance() ([]model.AttendanceRecord, error) {
 	return records, nil
 }
 
+func (r *AttendanceRepo) GetAllAttendanceForToday() ([]model.AttendanceRecord, error) {
+	query := `
+        SELECT id, child, parent_auth0_id, date, missing, justified, picked_up
+        FROM attendance_record
+        WHERE DATE(date) = CURRENT_DATE
+        ORDER BY date DESC
+    `
+	rows, err := r.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var records []model.AttendanceRecord
+	for rows.Next() {
+		var rec model.AttendanceRecord
+		err := rows.Scan(&rec.ID, &rec.Child, &rec.Parent, &rec.Date, &rec.Missing, &rec.Justified, &rec.PickedUp)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, rec)
+	}
+	return records, nil
+}
+
 func (r *AttendanceRepo) GetAllAttendanceByParent(parentID string) ([]model.AttendanceRecord, error) {
 	query := `
 		SELECT id, child, parent_auth0_id, date, missing, justified, picked_up
@@ -88,10 +113,61 @@ func (r *AttendanceRepo) GetAllAttendanceByParent(parentID string) ([]model.Atte
 	return records, nil
 }
 
+func (r *AttendanceRepo) GetAllAttendanceByParentForToday(parentID string) ([]model.AttendanceRecord, error) {
+	query := `
+		SELECT id, child, parent_auth0_id, date, missing, justified, picked_up
+		FROM attendance_record
+		WHERE parent_auth0_id = ? AND DATE(date) = CURRENT_DATE
+        ORDER BY date DESC
+	`
+
+	rows, err := r.DB.Query(query, parentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var records []model.AttendanceRecord
+	for rows.Next() {
+		var rec model.AttendanceRecord
+		if err := rows.Scan(
+			&rec.ID,
+			&rec.Child,
+			&rec.Parent,
+			&rec.Date,
+			&rec.Missing,
+			&rec.Justified,
+			&rec.PickedUp,
+		); err != nil {
+			return nil, err
+		}
+		records = append(records, rec)
+	}
+
+	return records, nil
+}
+
 func (r *AttendanceRepo) InsertAttendance(child string, parentAuth0ID string, date time.Time, missing bool, pickedUp bool, justified bool) (int64, error) {
+	var exists int
+	checkQuery := `
+        SELECT 1
+        FROM attendance_record
+        WHERE child = ? AND DATE(date) = DATE(?)
+        LIMIT 1
+    `
+	err := r.DB.QueryRow(checkQuery, child, date).Scan(&exists)
+	if err != nil && err != sql.ErrNoRows {
+		log.Printf("Error checking existing attendance for child '%s' on '%s': %v", child, date.Format("2006-01-02"), err)
+		return 0, err
+	}
+	if exists == 1 {
+		return 0, fmt.Errorf("attendance for child '%s' on %s already exists", child, date.Format("2006-01-02"))
+	}
+
 	query := `INSERT INTO attendance_record (child, parent_auth0_id, date, missing, picked_up, justified) VALUES (?, ?, ?, ?, ?, ?)`
 	res, err := r.DB.Exec(query, child, parentAuth0ID, date, missing, pickedUp, justified)
 	if err != nil {
+		log.Printf("Failed to insert attendance for child '%s' on '%s': %v", child, date.Format("2006-01-02"), err)
 		return 0, err
 	}
 
@@ -99,6 +175,7 @@ func (r *AttendanceRepo) InsertAttendance(child string, parentAuth0ID string, da
 	if err != nil {
 		return 0, err
 	}
+
 	return id, nil
 }
 
@@ -135,4 +212,33 @@ func (r *AttendanceRepo) JustifyAttendance(parentID, childID string, validFrom, 
 	}
 
 	return res.RowsAffected()
+}
+
+func (r *AttendanceRepo) GetChildStatistics(childID string) (model.ChildStatistics, error) {
+	var stats model.ChildStatistics
+
+	query := "SELECT missing, justified FROM attendance_record WHERE child = ?"
+	rows, err := r.DB.Query(query, childID)
+	if err != nil {
+		return stats, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var missing, justified bool
+		if err := rows.Scan(&missing, &justified); err != nil {
+			return stats, err
+		}
+		stats.TotalRecords++
+		if missing {
+			stats.TotalAbsent++
+		} else {
+			stats.TotalPresent++
+		}
+		if justified {
+			stats.TotalJustified++
+		}
+	}
+
+	return stats, nil
 }

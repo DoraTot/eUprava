@@ -42,12 +42,14 @@ export class AppointmentsComponent implements OnInit {
   ngOnInit(): void {
 
     const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
 
+    const year = tomorrow.getFullYear();
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const day = String(tomorrow.getDate()).padStart(2, '0');
+    const hours = String(tomorrow.getHours()).padStart(2, '0');
+    const minutes = String(tomorrow.getMinutes()).padStart(2, '0');
     this.minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
 
     this.auth.idTokenClaims$.subscribe(claims => {

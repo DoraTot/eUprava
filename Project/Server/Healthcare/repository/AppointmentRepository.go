@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"main.go/model"
+	"time"
 )
 
 type AppointmentRepository struct {
@@ -152,4 +153,58 @@ func (r *AppointmentRepository) GetAppointmentByID(id string) (*model.Appointmen
 	}
 
 	return &a, nil
+}
+
+func (r *AppointmentRepository) GetChildAppointmentStatistics(childName string) (model.ChildStatistics, error) {
+	var stats model.ChildStatistics
+
+	log.Printf("Getting appointment stats for child '%s'", childName)
+
+	now := time.Now()
+	monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	yearStart := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, now.Location())
+
+	log.Printf("Month start: %v, Year start: %v", monthStart, yearStart)
+
+	query := `
+        SELECT date_time
+        FROM appointments
+        WHERE child_name = ?
+    `
+	rows, err := r.DB.Query(query, childName)
+	if err != nil {
+		log.Printf("Failed to query appointments for child '%s': %v", childName, err)
+		return stats, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var dateStr string
+		if err := rows.Scan(&dateStr); err != nil {
+			log.Printf("Error scanning row for child '%s': %v", childName, err)
+			return stats, err
+		}
+
+		date, err := time.Parse("2006-01-02 15:04:05", dateStr)
+		if err != nil {
+			log.Printf("Error parsing date '%s' for child '%s': %v", dateStr, childName, err)
+			return stats, err
+		}
+
+		if date.After(monthStart) || date.Equal(monthStart) {
+			stats.MonthlyAppointments++
+		}
+
+		if date.After(yearStart) || date.Equal(yearStart) {
+			stats.YearlyAppointments++
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("Rows iteration error for child '%s': %v", childName, err)
+		return stats, err
+	}
+
+	log.Printf("Statistics for child '%s': %+v", childName, stats)
+	return stats, nil
 }

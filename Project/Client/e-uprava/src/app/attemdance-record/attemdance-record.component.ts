@@ -28,11 +28,13 @@ export class AttemdanceRecordComponent implements OnInit {
   attendanceForm!: FormGroup;
   appForm: FormGroup = new FormGroup({});
   medicalRecords: [] = [];
-
+  viewMode: 'today' | 'history' = 'today';
+  today = new Date();
   records: any[] = [];
   parents: any[] = [];
   authIdToken: string | null = null;
   role: string = "";
+  children: any[] = [];
 
   userId: string = "";
 
@@ -41,13 +43,12 @@ export class AttemdanceRecordComponent implements OnInit {
   ngOnInit(): void {
     this.attendanceForm = this.fb.group({
       child: ['', Validators.required],
-      parent: ['', Validators.required],
-      date: ['', Validators.required],
       missing: [false]
     });
     this.appForm = this.fb.group({
       medical_justification: ['', Validators.required]
     });
+
 
     this.auth.idTokenClaims$.subscribe(claims => {
       if (claims && claims.__raw) {
@@ -58,12 +59,25 @@ export class AttemdanceRecordComponent implements OnInit {
         console.log('User role:', role);
         this.userId = claims['sub'];
         this.role = role;
-        if (this.role == "Educator") {
-          this.loadRecords();
-        } else if (this.role != "Doctor") {
-          this.loadRecordsByParent();
+        this.fetchChildren();
+
+
+        if (this.viewMode === 'today') {
+          if (this.role == "Educator") {
+            this.loadRecordsForToday();
+          } else if (this.role != "Doctor") {
+            this.loadRecordsByParentForToday();
+          }
+        } else {
+          if (this.role == "Educator") {
+            this.loadRecords();
+          } else if (this.role != "Doctor") {
+            this.loadRecordsByParent();
+          }
         }
+
       }
+
     });
 
 
@@ -71,6 +85,29 @@ export class AttemdanceRecordComponent implements OnInit {
     // this.loadMedicalRecords(this.userId)
   }
 
+  setView(mode: 'today' | 'history') {
+    this.viewMode = mode;
+
+    if (mode === 'today') {
+      if (this.role == "Educator") {
+        this.loadRecordsForToday();
+      } else if (this.role != "Doctor") {
+        this.loadRecordsByParentForToday();
+      }
+    } else {
+      if (this.role == "Educator") {
+        this.loadRecords();
+      } else if (this.role != "Doctor") {
+        this.loadRecordsByParent();
+      }
+    }
+  }
+
+  fetchChildren() {
+    this.http.get<any[]>(`http://localhost:8080/children/getAll`).subscribe(data => {
+      this.children = data;
+    });
+  }
   loadMedicalRecords(userId: string) {
 
     // this.auth.idTokenClaims$.subscribe(claims => {
@@ -92,14 +129,8 @@ export class AttemdanceRecordComponent implements OnInit {
     this.auth.idTokenClaims$.subscribe(claims => {
       if (claims && claims.__raw) {
         this.authIdToken = claims.__raw;
-
         const role = claims['https://myapp.example/role'] as string;
         const userSub = claims['sub'] as string;
-
-        console.log('Auth0 ID Token:', this.authIdToken);
-        console.log('Auth0 Claims:', claims);
-        console.log('User role:', role);
-
         this.role = role;
 
         this.http
@@ -113,6 +144,11 @@ export class AttemdanceRecordComponent implements OnInit {
 
   }
 
+  loadRecordsForToday() {
+    this.http.get<any[]>('http://localhost:8080/attendanceForToday')
+      .subscribe(res => this.records = res);
+  }
+
   loadRecords() {
     this.http.get<any[]>('http://localhost:8080/attendance')
       .subscribe(res => this.records = res);
@@ -120,6 +156,11 @@ export class AttemdanceRecordComponent implements OnInit {
 
   loadRecordsByParent() {
     this.http.get<any[]>('http://localhost:8080/attendanceByParent/' + this.userId)
+      .subscribe(res => this.records = res);
+  }
+
+  loadRecordsByParentForToday() {
+    this.http.get<any[]>('http://localhost:8080/attendanceByParentForToday/' + this.userId)
       .subscribe(res => this.records = res);
   }
 
@@ -141,16 +182,32 @@ export class AttemdanceRecordComponent implements OnInit {
     if (this.attendanceForm.invalid) return;
 
     const newRecord = this.attendanceForm.value;
-    if (newRecord.dateTime) {
-      const dt = new Date(newRecord.dateTime);
-      newRecord.dateTime = dt.toISOString().slice(0, 19).replace('T', ' ');
-    }
+    newRecord.date = (new Date()).toISOString().slice(0, 10);
+
+    const selectedChildName = this.attendanceForm.value.child;
+
+    const selectedChild = this.children.find(
+      c => c.name === selectedChildName
+    );
+    newRecord.parent = selectedChild.parent_id;
     newRecord.justified = false;
     console.log(newRecord);
     this.http.post('http://localhost:8080/attendance', newRecord)
       .subscribe({
         next: () => {
-          this.loadRecords();
+          if (this.viewMode === 'today') {
+            if (this.role == "Educator") {
+              this.loadRecordsForToday();
+            } else if (this.role != "Doctor") {
+              this.loadRecordsByParentForToday();
+            }
+          } else {
+            if (this.role == "Educator") {
+              this.loadRecords();
+            } else if (this.role != "Doctor") {
+              this.loadRecordsByParent();
+            }
+          }
           this.attendanceForm.reset({ missing: false });
           this.closeModal();
         },

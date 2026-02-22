@@ -167,3 +167,21 @@ func (h *AppointmentHandler) JustifyAppointment(w http.ResponseWriter, r *http.R
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "justified"})
 }
+
+func (h *AppointmentHandler) GetChildStats(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	childName := vars["childName"]
+	if childName == "" {
+		http.Error(w, "Missing childID", http.StatusBadRequest)
+		return
+	}
+
+	stats, err := h.Repo.GetChildAppointmentStatistics(childName)
+	if err != nil {
+		http.Error(w, "Failed to get statistics", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
+}

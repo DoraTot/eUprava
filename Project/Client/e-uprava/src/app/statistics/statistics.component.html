@@ -1,0 +1,49 @@
+<div class="card p-4 mb-4 shadow-sm">
+  <h5 class="mb-3">Attendance Statistics</h5>
+
+  <div class="row text-center">
+
+    <div class="col-md-3 mb-3">
+      <div class="p-3 bg-light rounded">
+        <h6>Total Records</h6>
+        <h4>{{ totalRecords }}</h4>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="p-3 bg-danger-subtle rounded">
+        <h6>Total Absences</h6>
+        <h4>{{ totalAbsent }}</h4>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="p-3 bg-success-subtle rounded">
+        <h6>Total Present</h6>
+        <h4>{{ totalPresent }}</h4>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="p-3 bg-warning-subtle rounded">
+        <h6>Justified Absences</h6>
+        <h4>{{ totalJustified }}</h4>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="p-3 bg-info-subtle rounded">
+        <h6>Doctor Appointments (This Month)</h6>
+        <h4>{{ monthlyAppointments }}</h4>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="p-3 bg-secondary-subtle rounded">
+        <h6>Doctor Appointments (This Year)</h6>
+        <h4>{{ yearlyAppointments }}</h4>
+      </div>
+    </div>
+
+  </div>
+</div>

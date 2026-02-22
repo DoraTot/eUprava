@@ -84,7 +84,7 @@ func (h *MedicalJustificationHandler) GetJustificationsForParent(w http.Response
 func (h *MedicalJustificationHandler) GetJustificationsForDoctor(w http.ResponseWriter, r *http.Request) {
 	//parentIDStr := r.URL.Query().Get("userId")
 	vars := mux.Vars(r)
-	doctorID := vars["userId"]
+	doctorID := vars["id"]
 	log.Println("Received doctorID:", doctorID)
 
 	justification, err := h.Repo.GetAppointmentsByDoctor(doctorID)

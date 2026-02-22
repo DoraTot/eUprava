@@ -73,10 +73,13 @@ func main() {
 	//r.Handle("/attendance", enableCORS(http.HandlerFunc(attendanceHandler.PostRecord))).Methods(http.MethodPost)
 
 	r.HandleFunc("/attendance", attendanceHandler.GetRecords).Methods("GET")
+	r.HandleFunc("/attendanceForToday", attendanceHandler.GetRecordsForToday).Methods("GET")
 	r.HandleFunc("/attendanceByParent/{id}", attendanceHandler.GetRecordsByParent).Methods("GET")
+	r.HandleFunc("/attendanceByParentForToday/{id}", attendanceHandler.GetRecordsByParentForToday).Methods("GET")
 	r.HandleFunc("/attendance", attendanceHandler.PostRecord).Methods("POST")
 	r.HandleFunc("/attendance/pickUp", attendanceHandler.PickUp).Methods("POST")
 	r.HandleFunc("/attendance/justify", attendanceHandler.JustifyAttendance).Methods("POST")
+	r.HandleFunc("/getChildStats/{childName}", attendanceHandler.GetChildStats).Methods("GET")
 
 	r.HandleFunc("/children/add", childrenHandler.Create).Methods("POST")
 	r.HandleFunc("/enrollChild", childrenHandler.EnrollChild).Methods("POST")

@@ -1,37 +1,67 @@
 <div class="container my-4">
 
+  <div class="mb-3">
+    <button
+      class="btn me-2"
+      [ngClass]="viewMode === 'today' ? 'btn-secondary' : 'btn-outline-secondary'"
+      (click)="setView('today')">
+      Today
+    </button>
+
+    <button
+      class="btn"
+      [ngClass]="viewMode === 'history' ? 'btn-secondary' : 'btn-outline-secondary'"
+      (click)="setView('history')">
+      View History
+    </button>
+  </div>
+
   <!-- Page Title -->
-  <h2 class="mb-3">Attendance Records</h2>
+  <h2 class="mb-3">
+    <ng-container *ngIf="viewMode === 'today'; else historyTitle">
+      Attendance Records for {{ today | date:'dd.MM.yyyy.' }}
+    </ng-container>
+    <ng-template #historyTitle>
+      Attendance History
+    </ng-template>
+  </h2>
+
 
   <!-- Table -->
   <div class="table-responsive mb-4">
-    <table class="table table-striped table-bordered align-middle">
-      <thead class="table-dark">
+    <table class="table table-striped" style="text-align: center;">
+      <thead>
       <tr>
-        <th>ID</th>
         <th>Child</th>
         <th>Parent</th>
         <th>Date</th>
         <th>Missing</th>
         <th>Justified</th>
         <th>Picked up</th>
+        <th></th>
       </tr>
       </thead>
       <tbody>
       <tr *ngFor="let record of records">
-        <td>{{ record.id }}</td>
         <td>{{ record.child }}</td>
         <td>{{ record.parent }}</td>
-        <td>{{ record.date }}</td>
+        <td>{{ record.date | date:'yyyy-MM-dd' }}</td>
         <td>{{ record.missing ? 'Yes' : 'No' }}</td>
         <td>{{ record.justified ? 'Yes' : 'No' }}</td>
         <td>{{ record.pickedUp ? 'Yes' : 'No' }}</td>
+        <td>
+          <button
+            class="btn btn-outline-primary mb-3"
+            [routerLink]="['/statistics', record.child]">
+            View Statistics for this child
+          </button>
+        </td>
       </tr>
       </tbody>
     </table>
   </div>
-
-  <button *ngIf="role === 'Educator'" type="button" class="btn btn-primary mb-3" (click)="openModal()">
+<br><br><br>
+  <button *ngIf="role === 'Educator'" type="button" class="btn btn-outline-success mb-3" (click)="openModal()">
     Add Attendance Record
   </button>
 
@@ -48,32 +78,17 @@
           <form [formGroup]="attendanceForm" (ngSubmit)="addRecord()">
 
             <div class="mb-3">
-              <label class="form-label">Child</label>
-              <input type="text" class="form-control" formControlName="child" placeholder="Child Name">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Parent</label>
-              <select class="form-control" formControlName="parent">
-                <option *ngFor="let parent of parents" [value]="parent.user_id">
-                  {{ parent.name }} ({{ parent.email }})
+              <label class="form-label">Child's Name</label>
+              <select class="form-control" formControlName="child">
+                <option *ngFor="let child of children" [value]="child.name">
+                  {{ child.name }}
                 </option>
               </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Date</label>
-              <input type="date" class="form-control" formControlName="date">
             </div>
 
             <div class="form-check mb-3">
               <input class="form-check-input" type="checkbox" formControlName="missing" id="missingCheck">
               <label class="form-check-label" for="missingCheck">Missing</label>
-            </div>
-
-            <div class="mb-3">
-              <input class="form-check-input" type="checkbox" formControlName="pickedUp" id="pickedUp">
-              <label class="form-check-label" for="pickedUp">Picked up</label>
             </div>
 
             <div class="text-end">
@@ -114,7 +129,6 @@
               <button type="submit" class="btn btn-primary">Choose</button>
             </div>
 
-<!--          </form>-->
         </div>
 
       </div>

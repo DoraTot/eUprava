@@ -34,16 +34,33 @@
   </table>
 
 <br><br><br>
-  <form *ngIf="role === 'Patient/Parent'" [formGroup]="enrollmentForm" (ngSubmit)="addChild()" class="mb-3">
-    <div class="mb-2">
-      <label for="childName" class="form-label">Child Name</label>
-      <input id="childName" type="text" class="form-control" formControlName="name" placeholder="Enter child's name">
+
+  <button *ngIf="role === 'Patient/Parent'" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addChildModal">
+    Add Child
+  </button>
+  <div class="modal fade" id="addChildModal" #addChildModal tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Add Child</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <form [formGroup]="enrollmentForm" (ngSubmit)="addChild()">
+            <div class="mb-3">
+              <label for="childName" class="form-label">Child Name</label>
+              <input id="childName" type="text" class="form-control" formControlName="name" placeholder="Enter child's name">
+            </div>
+            <div class="text-end">
+              <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary" [disabled]="enrollmentForm.invalid">Add</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
     </div>
-    <button type="submit" class="btn btn-primary" [disabled]="enrollmentForm.invalid">
-      Add
-    </button>
-  </form>
-  <div *ngIf="showToast" class="toasttt">
-    {{ toastMessage }}
   </div>
 </div>

@@ -14,6 +14,7 @@ import { MedJustificationComponent } from './med-justification/med-justification
 import { HeaderComponent } from './header/header/header.component';
 import { SystematicExamComponent } from './systematic-exam/systematic-exam.component';
 import { EnrollmentComponent } from './enrollment/enrollment.component';
+import { StatisticsComponent } from './statistics/statistics.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { EnrollmentComponent } from './enrollment/enrollment.component';
     MedJustificationComponent,
     HeaderComponent,
     SystematicExamComponent,
-    EnrollmentComponent
+    EnrollmentComponent,
+    StatisticsComponent
   ],
   imports: [
     BrowserModule,
