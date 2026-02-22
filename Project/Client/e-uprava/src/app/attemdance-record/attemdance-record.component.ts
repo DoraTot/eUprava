@@ -192,4 +192,28 @@ export class AttemdanceRecordComponent implements OnInit {
     document.body.classList.remove('modal-open');
   }
 
+  pickUp(record: any) {
+
+    const formattedDate = record.date.split(' ')[0];
+
+    const body = {
+      parent: record.parent,
+      date: formattedDate
+    };
+
+    console.log("Body: ", body);
+
+    this.http.post<any>(
+      'http://localhost:8080/attendance/pickUp',
+      body
+    ).subscribe({
+      next: res => {
+        console.log(res);
+        record.pickedUp = true;
+      },
+      error: err => {
+        console.error(err);
+      }
+    });
+  }
 }
