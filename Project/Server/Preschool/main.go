@@ -67,6 +67,7 @@ func main() {
 	r.HandleFunc("/attendance", attendanceHandler.GetRecords).Methods("GET")
 	r.HandleFunc("/attendance", attendanceHandler.PostRecord).Methods("POST")
 	r.HandleFunc("/attendance/pickUp", attendanceHandler.PickUp).Methods("POST")
+	r.HandleFunc("/attendance/justify", attendanceHandler.Justify).Methods("POST")
 
 	//http.Handle("/attendance", enableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	//	switch r.Method {

@@ -66,3 +66,23 @@ func (r *AttendanceRepo) PickUp(parentAuth0ID string, date time.Time, pickedUp b
 
 	return rowsAffected, nil
 }
+
+func (r *AttendanceRepo) Justify(parentId string, justified bool, date time.Time) (int64, error) {
+	query := `
+		UPDATE attendance_record
+		SET justified = ?
+		WHERE parent_auth0_id = ? AND date = ?
+	`
+
+	res, err := r.DB.Exec(query, parentId, justified, date)
+	if err != nil {
+		return 0, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsAffected, nil
+}
