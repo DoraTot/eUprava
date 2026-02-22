@@ -2,7 +2,7 @@
 
   <h2 class="mb-3">Medical Justifications</h2>
   <div class="table-responsive mb-4">
-    <table class="table table-striped table-bordered align-middle">
+    <table class="table table-striped table-bordered align-middle" style="text-align: center">
       <thead class="table-dark">
       <tr>
         <th>ID</th>
@@ -11,6 +11,7 @@
         <th>Valid from</th>
         <th>Valid to</th>
         <th>Reason</th>
+        <th></th>
       </tr>
       </thead>
       <tbody>
@@ -21,6 +22,11 @@
         <td>{{ j.valid_from }}</td>
         <td>{{ j.valid_to }}</td>
         <td>{{ j.reason }}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" (click)="downloadJustificationPDF(j.id!)">
+            Download PDF
+          </button>
+        </td>
       </tr>
       </tbody>
     </table>

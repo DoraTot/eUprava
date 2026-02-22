@@ -4,7 +4,7 @@
 
 
   <h3>Children</h3>
-  <table class="table table-striped">
+  <table class="table table-striped" style="text-align: center;">
     <thead>
     <tr>
       <th>Name</th>
@@ -13,17 +13,21 @@
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let child of children">
+    <tr *ngFor="let child of children" [ngClass]="{'border border-danger': child.enrolled === 'EXAM_EXPIRED', 'p-2': child.enrolled === 'EXAM_EXPIRED'}">
       <td>{{ child.name }}</td>
       <td>{{ child.enrolled }}</td>
       <td>
         <span *ngIf="child.exam_done" class="text-success">✔</span>
         <span *ngIf="!child.exam_done" class="text-danger">✖</span>
+
       </td>
-      <td>
-        <button *ngIf="role === 'Patient/Parent' && child.enrolled != 'ENROLLED'" class="btn btn-sm btn-success" (click)="enrollChild(child.name)">
-          Enroll
-        </button>
+      <td class="text-danger mt-1" >
+        <div  *ngIf="child.enrolled === 'EXAM_EXPIRED'">
+          ⚠️ Systematic exam expired – action required. <br> Child cannot attend until the systematic exam is done.
+        </div>
+<!--        <button *ngIf="role === 'Patient/Parent' && child.enrolled != 'ENROLLED'" class="btn btn-sm btn-success" (click)="enrollChild(child.name)">-->
+<!--          Enroll-->
+<!--        </button>-->
       </td>
     </tr>
     </tbody>

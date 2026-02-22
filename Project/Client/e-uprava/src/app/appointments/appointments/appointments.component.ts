@@ -145,6 +145,18 @@ export class AppointmentsComponent implements OnInit {
   }
 
   addAppointment() {
+    const selectedChildName = this.appointmentForm.value.child_name;
+    const sysExam = this.appointmentForm.value.sys_exam;
+
+    const selectedChild = this.children.find(
+      c => c.name === selectedChildName
+    );
+
+    if (sysExam && selectedChild?.enrolled !== 'EXAM_EXPIRED') {
+      alert('Systematic exam can only be scheduled if systematic exam is expired.');
+      return;
+    }
+
     console.log(this.appointmentForm.value);
     if (this.appointmentForm.invalid) return;
 

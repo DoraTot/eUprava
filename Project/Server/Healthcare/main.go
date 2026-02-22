@@ -63,11 +63,14 @@ func main() {
 	r.Handle("/exam/check", http.HandlerFunc(sysExamHandler.CheckExamStatus)).Methods("POST")
 	r.Handle("/createSystematicExam", http.HandlerFunc(sysExamHandler.CreateExam)).Methods("POST")
 	r.Handle("/updateSystematicExam/{appointmentId}", http.HandlerFunc(sysExamHandler.UpdateExamStatusByAppointment)).Methods("POST")
+	r.HandleFunc("/checkExpiredExams", sysExamHandler.RunExpiredExamCheck).Methods("POST")
 
 	r.Handle("/getAllJustifications", http.HandlerFunc(medicalJustificationHandler.GetAllJustifications)).Methods("GET")
 	r.Handle("/getJustificationsForParent/{userId}", http.HandlerFunc(medicalJustificationHandler.GetJustificationsForParent)).Methods("GET")
-	r.Handle("/getJustificationsForDoctor/{userId}", http.HandlerFunc(medicalJustificationHandler.GetJustificationsForDoctor)).Methods("GET")
+	r.Handle("/getJustificationsForDoctor/{id}", http.HandlerFunc(medicalJustificationHandler.GetJustificationsForDoctor)).Methods("GET")
+	r.Handle("/downloadJustificationPDF/{id}", http.HandlerFunc(medicalJustificationHandler.DownloadJustificationPDF)).Methods("GET")
 	r.Handle("/createJustification", http.HandlerFunc(medicalJustificationHandler.CreateJustification)).Methods("POST")
+	go startDailyExpirationCheck(sysExamRepo, sysExamHandler)
 
 	// ---- Appointment routes ----
 	r.Handle("/createAppointment", http.HandlerFunc(appointmentHandler.CreateAppointment)).Methods("POST")

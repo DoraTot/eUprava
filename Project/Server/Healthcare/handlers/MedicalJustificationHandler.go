@@ -3,11 +3,14 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jung-kurt/gofpdf"
 	"log"
 	"main.go/model"
 	"main.go/repository"
 	"net/http"
+	"strconv"
 )
 
 type MedicalJustificationHandler struct {
@@ -91,4 +94,60 @@ func (h *MedicalJustificationHandler) GetJustificationsForDoctor(w http.Response
 	}
 
 	json.NewEncoder(w).Encode(justification)
+}
+
+func (h *MedicalJustificationHandler) DownloadJustificationPDF(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	log.Println("Received med justification id:", idStr)
+
+	idInt, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	justification, err := h.Repo.GetJustificationByID(idInt)
+	if err != nil || justification == nil {
+		http.Error(w, "Justification not found", http.StatusNotFound)
+		return
+	}
+
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 16)
+	pdf.CellFormat(0, 10, "Medical Justification", "", 1, "C", false, 0, "")
+	pdf.Ln(5)
+
+	pdf.SetFont("Arial", "", 12)
+	lines := []string{
+		fmt.Sprintf("ID: %d", justification.ID),
+		fmt.Sprintf("Child: %s", justification.ChildName),
+		fmt.Sprintf("Doctor ID: %s", justification.DoctorID),
+		fmt.Sprintf("Parent ID: %s", justification.ParentID),
+		fmt.Sprintf("Valid From: %s", justification.ValidFrom),
+		fmt.Sprintf("Valid To: %s", justification.ValidTo),
+		fmt.Sprintf("Reason: %s", justification.Reason),
+	}
+	for _, line := range lines {
+		pdf.CellFormat(0, 8, line, "", 1, "", false, 0, "")
+	}
+
+	var buf bytes.Buffer
+	err = pdf.Output(&buf)
+	if err != nil {
+		log.Println("Failed to generate PDF:", err)
+		http.Error(w, "Failed to generate PDF", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="justification_%d.pdf"`, justification.ID))
+	w.Header().Set("Content-Transfer-Encoding", "binary")
+	w.Header().Set("Expires", "0")
+	w.WriteHeader(http.StatusOK)
+
+	if _, err := w.Write(buf.Bytes()); err != nil {
+		log.Println("Failed to write PDF to response:", err)
+	}
 }

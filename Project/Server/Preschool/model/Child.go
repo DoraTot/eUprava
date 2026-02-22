@@ -5,7 +5,7 @@ type EnrolledStatus string
 const (
 	Enrolled    EnrolledStatus = "ENROLLED"
 	Pending     EnrolledStatus = "PENDING"
-	NotEnrolled EnrolledStatus = "NOTENROLLED"
+	NotEnrolled EnrolledStatus = "EXAM_EXPIRED"
 )
 
 type Child struct {

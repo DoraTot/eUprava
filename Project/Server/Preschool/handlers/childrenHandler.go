@@ -207,3 +207,57 @@ func (h *ChildrenHandler) ExamCompleted(w http.ResponseWriter, r *http.Request) 
 		"child_name": req.ChildName,
 	})
 }
+
+func (h *ChildrenHandler) ExamExpired(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		ParentID  string `json:"parent_id"`
+		ChildName string `json:"child_name"`
+		Status    string `json:"status"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println("Exam expired for:", req.ChildName)
+
+	_, err := h.Repo.UpdateEnrollmentStatus(req.ParentID, req.ChildName, string(model.NotEnrolled))
+	if err != nil {
+		http.Error(w, "Failed to update child status: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"status": "child status updated to exam expired",
+	})
+}
+
+func (h *ChildrenHandler) GetChildsEnrollmentStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	childName := vars["childName"]
+	parentID := vars["parentId"]
+
+	if childName == "" || parentID == "" {
+		http.Error(w, "childName and parentId are required", http.StatusBadRequest)
+		return
+	}
+
+	child, err := h.Repo.GetChildByParentAndName(parentID, childName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Child not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"childName": child.Name,
+		"parentID":  child.ParentId,
+		"status":    child.Enrolled,
+	})
+}

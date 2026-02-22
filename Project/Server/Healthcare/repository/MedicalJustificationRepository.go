@@ -104,3 +104,52 @@ func (r *MedicalJustificationRepository) GetAllJustifications() ([]model.Medical
 	}
 	return justifications, nil
 }
+
+func (r *MedicalJustificationRepository) GetJustificationByID(id int) (*model.MedicalJustification, error) {
+	query := `
+		SELECT id, child_name, doctor_id, parent_id, valid_from, valid_to, reason
+		FROM medical_justifications
+		WHERE id = ?
+	`
+	row := r.DB.QueryRow(query, id)
+
+	var j model.MedicalJustification
+
+	var validFrom sql.NullString
+	var validTo sql.NullString
+	var reason sql.NullString
+
+	log.Println("Running query for ID:", id)
+
+	err := row.Scan(
+		&j.ID,
+		&j.ChildName,
+		&j.DoctorID,
+		&j.ParentID,
+		&validFrom,
+		&validTo,
+		&reason,
+	)
+
+	if err != nil {
+		log.Println("SCAN ERROR:", err)
+		return nil, err
+	}
+
+	log.Println("FOUND ROW WITH ID:", j.ID)
+
+	if validFrom.Valid {
+		j.ValidFrom = validFrom.String
+	}
+
+	if validTo.Valid {
+		j.ValidTo = validTo.String
+	}
+	if reason.Valid {
+		j.Reason = reason.String
+	} else {
+		j.Reason = ""
+	}
+
+	return &j, nil
+}

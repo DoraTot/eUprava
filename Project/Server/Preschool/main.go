@@ -78,8 +78,10 @@ func main() {
 	r.HandleFunc("/children/add", childrenHandler.Create).Methods("POST")
 	r.HandleFunc("/enrollChild", childrenHandler.EnrollChild).Methods("POST")
 	r.HandleFunc("/examCompleted", childrenHandler.ExamCompleted).Methods("POST")
+	r.HandleFunc("/examExpired", childrenHandler.ExamExpired).Methods("POST")
 	r.HandleFunc("/children/getByParentID/{id}", childrenHandler.GetByParentID).Methods("GET")
 	r.HandleFunc("/children/getAll", childrenHandler.GetAll).Methods("GET")
+	r.HandleFunc("/child/status/childName/{childName}/parentId/{parentId}", childrenHandler.GetChildsEnrollmentStatus).Methods("GET")
 
 	//http.Handle("/attendance", enableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	//	switch r.Method {

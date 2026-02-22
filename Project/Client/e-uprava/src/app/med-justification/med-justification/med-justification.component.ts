@@ -101,4 +101,19 @@ export class MedJustificationComponent implements OnInit {
     document.body.classList.remove('modal-open');
   }
 
+  downloadJustificationPDF(id: number) {
+    this.http.get(`http://localhost:8081/downloadJustificationPDF/${id}`, {
+      responseType: 'blob'
+    }).subscribe(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `justification_${id}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }, error => {
+      console.error("Failed to download PDF:", error);
+    });
+  }
+
 }

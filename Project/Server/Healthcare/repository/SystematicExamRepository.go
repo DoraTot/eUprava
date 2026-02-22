@@ -189,3 +189,57 @@ func (r *SystematicExamRepository) GetExamByAppointmentID(appointmentID int) (*m
 	fmt.Println("DEBUG: Found exam:", exam)
 	return &exam, nil
 }
+
+func (r *SystematicExamRepository) GetExpiredExams() ([]model.SystematicExam, error) {
+	query := `
+		SELECT id, child_name, parent_id, doctor_id, date, valid_until, status, appointment_id
+		FROM systematic_exams
+		WHERE status = ?
+		AND valid_until IS NOT NULL
+		AND valid_until < NOW()
+	`
+
+	rows, err := r.DB.Query(query, string(model.ExamCompleted))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var exams []model.SystematicExam
+
+	for rows.Next() {
+		var exam model.SystematicExam
+		var dateStr, validUntilStr sql.NullString
+		var status string
+
+		err := rows.Scan(
+			&exam.ID,
+			&exam.ChildName,
+			&exam.ParentID,
+			&exam.DoctorID,
+			&dateStr,
+			&validUntilStr,
+			&status,
+			&exam.AppointmentID,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if dateStr.Valid {
+			t, _ := time.Parse("2006-01-02 15:04:05", dateStr.String)
+			exam.Date = t
+		}
+
+		if validUntilStr.Valid {
+			t, _ := time.Parse("2006-01-02 15:04:05", validUntilStr.String)
+			exam.ValidUntil = &t
+		}
+
+		exam.Status = model.ExamStatus(status)
+
+		exams = append(exams, exam)
+	}
+
+	return exams, nil
+}

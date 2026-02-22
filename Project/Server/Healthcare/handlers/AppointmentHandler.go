@@ -26,6 +26,34 @@ func (h *AppointmentHandler) CreateAppointment(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	if a.SysExam {
+		resp, err := http.Get("http://app:8080/child/status/childName/" + a.ChildName + "/parentId/" + a.ParentID)
+		if err != nil {
+			http.Error(w, "Failed to validate child status", http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			http.Error(w, "Child not found", http.StatusBadRequest)
+			return
+		}
+
+		var statusResponse struct {
+			Status string `json:"status"`
+		}
+
+		if err := json.NewDecoder(resp.Body).Decode(&statusResponse); err != nil {
+			http.Error(w, "Invalid response from preschool service", http.StatusInternalServerError)
+			return
+		}
+
+		if statusResponse.Status != "EXAM_EXPIRED" {
+			http.Error(w, "Systematic exam not allowed for this child", http.StatusBadRequest)
+			return
+		}
+	}
+
 	createdA, err := h.Repo.CreateAppointment(&a)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
