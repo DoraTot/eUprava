@@ -77,27 +77,25 @@ func (h *AttendanceHandler) GetRecordsByParentForToday(w http.ResponseWriter, r 
 func (h *AttendanceHandler) PickUp(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
-		Parent string `json:"parent"`
-		Date   string `json:"date"`
+		Parent    string `json:"parent"`
+		ChildName string `json:"childName"`
+		Date      string `json:"date"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-	dateTime, err := time.Parse("2006-01-02", req.Date)
-	if err != nil {
-		http.Error(w, "Invalid date format", http.StatusBadRequest)
-		return
-	}
 
-	rows, err := h.Repo.PickUp(req.Parent, dateTime, true)
+	rows, err := h.Repo.PickUp(req.Parent, req.ChildName, req.Date, true)
 	if err != nil {
 		log.Println("Failed to insert attendance:", err)
 		http.Error(w, "Failed to insert record", http.StatusInternalServerError)
 		return
 	}
 	if rows == 0 {
+		log.Printf("No attendance record found for parent='%s', child='%s', date='%v'",
+			req.Parent, req.ChildName, req.Date)
 		http.Error(w, "No attendance record found for given parent and date", http.StatusNotFound)
 		return
 	}

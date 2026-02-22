@@ -255,6 +255,7 @@ export class AttemdanceRecordComponent implements OnInit {
 
     const body = {
       parent: record.parent,
+      childName: record.child,
       date: formattedDate
     };
 
@@ -267,6 +268,19 @@ export class AttemdanceRecordComponent implements OnInit {
       next: res => {
         console.log(res);
         record.pickedUp = true;
+        if (this.viewMode === 'today') {
+          if (this.role == "Educator") {
+            this.loadRecordsForToday();
+          } else if (this.role != "Doctor") {
+            this.loadRecordsByParentForToday();
+          }
+        } else {
+          if (this.role == "Educator") {
+            this.loadRecords();
+          } else if (this.role != "Doctor") {
+            this.loadRecordsByParent();
+          }
+        }
       },
       error: err => {
         console.error(err);

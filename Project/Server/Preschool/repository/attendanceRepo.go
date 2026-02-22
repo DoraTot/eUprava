@@ -179,23 +179,35 @@ func (r *AttendanceRepo) InsertAttendance(child string, parentAuth0ID string, da
 	return id, nil
 }
 
-func (r *AttendanceRepo) PickUp(parentAuth0ID string, date time.Time, pickedUp bool) (int64, error) {
-	query := `
-		UPDATE attendance_record
-		SET picked_up = ?
-		WHERE parent_auth0_id = ? AND date = ?
-	`
+func (r *AttendanceRepo) PickUp(parentAuth0ID string, childName string, date string, pickedUp bool) (int64, error) {
 
-	res, err := r.DB.Exec(query, pickedUp, parentAuth0ID, date)
+	var count int
+	err := r.DB.QueryRow(`
+    SELECT COUNT(*) 
+    FROM attendance_record 
+    WHERE parent_auth0_id = ? AND child = ? AND DATE(date) = ?
+`, parentAuth0ID, childName, date).Scan(&count)
+
+	log.Printf("Matching rows before UPDATE: %d", count)
+
+	query := `
+    UPDATE attendance_record
+    SET picked_up = ?
+    WHERE parent_auth0_id = ? AND child = ? AND DATE(date) = ?
+`
+	log.Printf("PickUp called with parent='%s', child='%s', date='%v', pickedUp=%v", parentAuth0ID, childName, date, pickedUp)
+
+	res, err := r.DB.Exec(query, pickedUp, parentAuth0ID, childName, date)
 	if err != nil {
+		log.Printf("SQL Exec error: %v", err)
 		return 0, err
 	}
-
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
+		log.Printf("RowsAffected error: %v", err)
 		return 0, err
 	}
-
+	log.Printf("Rows affected: %d", rowsAffected)
 	return rowsAffected, nil
 }
 
