@@ -1,0 +1,27 @@
+<div class="notifications-container p-3">
+  <h2 class="mb-3">Notifications</h2>
+
+  <h5 *ngIf="(notifications$ | async)?.length">New</h5>
+  <ul class="list-group mb-3">
+    <li *ngFor="let msg of (notifications$ | async)?.slice()?.reverse()"
+        class="list-group-item d-flex align-items-center justify-content-between notification-item new-notification">
+      <span>{{ msg }}</span>
+      <span class="text-muted small">Just now</span>
+    </li>
+    <li *ngIf="(notifications$ | async)?.length === 0" class="list-group-item text-center text-muted">
+      No new notifications
+    </li>
+  </ul>
+
+  <h5 *ngIf="oldNotifications.length">Earlier</h5>
+  <ul class="list-group">
+    <li *ngFor="let msg of oldNotifications"
+        class="list-group-item d-flex align-items-center justify-content-between notification-item old-notification">
+      <span>{{ msg.message }}</span>
+      <span class="text-muted small">{{ msg.created_at | date:'short' }}</span>
+    </li>
+    <li *ngIf="oldNotifications.length === 0" class="list-group-item text-center text-muted">
+      No earlier notifications
+    </li>
+  </ul>
+</div>

@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"main.go/model"
 	"main.go/repository"
+	ws "main.go/websocket"
 	"net/http"
 	"strconv"
 	"time"
@@ -128,6 +130,28 @@ func (h *SystematicExamHandler) notifyPreschool(appointmentID int) {
 	if err != nil {
 		fmt.Println("Failed to notify preschool:", err)
 	}
+
+	message := "CONGRATULATIONS! The systematic exam for you child " + exam.ChildName + " is approved, your child is officially ENROLLED in the desired preschool facility."
+
+	log.Println("Sending notification to parent:", exam.ParentID, "Message:", message)
+
+	ws.SendNotification(exam.ParentID, message)
+	log.Println("Notification sent successfully to parent:", exam.ParentID)
+	notification := map[string]interface{}{
+		"user_id": exam.ParentID,
+		"message": message,
+	}
+
+	jsonData, _ := json.Marshal(notification)
+
+	resp1, err := http.Post("http://app:8080/notifications",
+		"application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println("Failed to send notification to preschool service:", err)
+	} else {
+		defer resp1.Body.Close()
+		log.Println("Notification sent to preschool service, status:", resp1.Status)
+	}
 }
 
 func (h *SystematicExamHandler) NotifyPreschoolExpired(exam *model.SystematicExam) {
@@ -167,6 +191,28 @@ func (h *SystematicExamHandler) NotifyPreschoolExpired(exam *model.SystematicExa
 		return
 	}
 	defer resp.Body.Close()
+
+	message := "The systematic exam for you child " + exam.ChildName + " expired, please take action as soon as possible."
+
+	log.Println("Sending notification to parent:", exam.ParentID, "Message:", message)
+
+	ws.SendNotification(exam.ParentID, message)
+	log.Println("Notification sent successfully to parent:", exam.ParentID)
+	notification := map[string]interface{}{
+		"user_id": exam.ParentID,
+		"message": message,
+	}
+
+	jsonData, _ := json.Marshal(notification)
+
+	resp1, err := http.Post("http://app:8080/notifications",
+		"application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println("Failed to send notification to preschool service:", err)
+	} else {
+		defer resp1.Body.Close()
+		log.Println("Notification sent to preschool service, status:", resp1.Status)
+	}
 
 	fmt.Println("Preschool notified about expired exam for:", exam.ChildName)
 }

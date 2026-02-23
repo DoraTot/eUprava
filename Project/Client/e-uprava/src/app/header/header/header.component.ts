@@ -1,15 +1,17 @@
-import {Component, OnInit} from '@angular/core';
-import {AuthService} from '@auth0/auth0-angular';
+import { Component, OnInit } from '@angular/core';
+import { AuthService } from '@auth0/auth0-angular';
+import { NotificationsService } from '../../notifications/notifications.service';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
+  styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit {
   role: string = "";
-  constructor(public auth: AuthService) {
-  }
+  notificationsCount = 0;
+
+  constructor(public auth: AuthService, private notifications: NotificationsService) {}
 
   ngOnInit() {
     this.auth.idTokenClaims$.subscribe(claims => {
@@ -17,7 +19,12 @@ export class HeaderComponent implements OnInit {
         this.role = claims['https://myapp.example/role'];
       }
     });
+
+    this.notifications.notifications$.subscribe(notifs => {
+      this.notificationsCount = notifs.length;
+    });
   }
+
   logout() {
     this.auth.logout({ logoutParams: { returnTo: window.location.origin } });
   }

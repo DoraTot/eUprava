@@ -50,7 +50,7 @@
         <td>{{ record.justified ? 'Yes' : 'No' }}</td>
         <td>{{ record.picked_up ? 'Yes' : 'No' }}</td>
         <td>
-          <button type="button" *ngIf="role === 'Educator' && !record.picked_up" class="btn btn-secondary me-2" (click)="pickUp(record)">Pick Up</button>
+          <button type="button" *ngIf="role === 'Educator' && !record.picked_up && !record.missing" class="btn btn-secondary me-2" (click)="pickUp(record)">Pick Up</button>
         </td>
         <td>
           <button

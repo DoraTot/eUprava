@@ -179,36 +179,79 @@ func (r *AttendanceRepo) InsertAttendance(child string, parentAuth0ID string, da
 	return id, nil
 }
 
-func (r *AttendanceRepo) PickUp(parentAuth0ID string, childName string, date string, pickedUp bool) (int64, error) {
-
-	var count int
-	err := r.DB.QueryRow(`
-    SELECT COUNT(*) 
-    FROM attendance_record 
-    WHERE parent_auth0_id = ? AND child = ? AND DATE(date) = ?
-`, parentAuth0ID, childName, date).Scan(&count)
-
-	log.Printf("Matching rows before UPDATE: %d", count)
-
+func (r *AttendanceRepo) GetByID(id int64) (*model.AttendanceRecord, error) {
 	query := `
-    UPDATE attendance_record
-    SET picked_up = ?
-    WHERE parent_auth0_id = ? AND child = ? AND DATE(date) = ?
-`
-	log.Printf("PickUp called with parent='%s', child='%s', date='%v', pickedUp=%v", parentAuth0ID, childName, date, pickedUp)
+		SELECT id, child, parent_auth0_id, date, missing, justified, picked_up
+		FROM attendance_record
+		WHERE id = ?
+		LIMIT 1
+	`
 
-	res, err := r.DB.Exec(query, pickedUp, parentAuth0ID, childName, date)
+	var rec model.AttendanceRecord
+
+	err := r.DB.QueryRow(query, id).Scan(
+		&rec.ID,
+		&rec.Child,
+		&rec.Parent,
+		&rec.Date,
+		&rec.Missing,
+		&rec.Justified,
+		&rec.PickedUp,
+	)
+
 	if err != nil {
-		log.Printf("SQL Exec error: %v", err)
-		return 0, err
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("attendance record with id %d not found", id)
+		}
+		return nil, err
 	}
+
+	return &rec, nil
+}
+
+func (r *AttendanceRepo) PickUp(parentAuth0ID string, childName string, date string, pickedUp bool,
+) (*model.AttendanceRecord, error) {
+
+	updateQuery := `
+        UPDATE attendance_record
+        SET picked_up = ?
+        WHERE parent_auth0_id = ?
+          AND child = ?
+          AND DATE(date) = ?
+    `
+
+	res, err := r.DB.Exec(updateQuery, pickedUp, parentAuth0ID, childName, date)
+	if err != nil {
+		return nil, err
+	}
+
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		log.Printf("RowsAffected error: %v", err)
-		return 0, err
+		return nil, err
 	}
-	log.Printf("Rows affected: %d", rowsAffected)
-	return rowsAffected, nil
+
+	if rowsAffected == 0 {
+		return nil, fmt.Errorf("no attendance record found to update")
+	}
+
+	selectQuery := `
+        SELECT id, child, parent_auth0_id, date, missing, justified, picked_up
+        FROM attendance_record
+        WHERE parent_auth0_id = ?
+          AND child = ?
+          AND DATE(date) = ?
+        LIMIT 1
+    `
+
+	var rec model.AttendanceRecord
+
+	err = r.DB.QueryRow(selectQuery, parentAuth0ID, childName, date).Scan(&rec.ID, &rec.Child, &rec.Parent, &rec.Date, &rec.Missing, &rec.Justified, &rec.PickedUp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &rec, nil
 }
 
 func (r *AttendanceRepo) JustifyAttendance(parentID, childID string, validFrom, validTo time.Time) (int64, error) {

@@ -219,6 +219,10 @@ export class AppointmentsComponent implements OnInit {
     return this.http.put(`http://localhost:8081/justifyAppointment/${id}`, {});
   }
 
+  justifyAppointmentWithoutNotif(id: number) {
+    return this.http.put(`http://localhost:8081/justifyAppointmentWithoutNotif/${id}`, {});
+  }
+
   fetchParentsDoctors() {
     this.http.get<any[]>('http://localhost:8082/parents').subscribe(data => {
       this.parents = data;
@@ -256,7 +260,7 @@ export class AppointmentsComponent implements OnInit {
     this.http.post(`http://localhost:8081/updateSystematicExam/` + appointmentId, payload)
       .subscribe({
         next: () => {
-          this.justifyAppointment(appointmentId).subscribe({
+          this.justifyAppointmentWithoutNotif(appointmentId).subscribe({
             next: () => {
               if (this.role === "Doctor") {
                 this.loadAppointmentsByDoctor();

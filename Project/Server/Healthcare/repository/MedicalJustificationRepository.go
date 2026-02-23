@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"main.go/model"
+	"time"
 )
 
 type MedicalJustificationRepository struct {
@@ -170,6 +171,31 @@ func (r *MedicalJustificationRepository) GetJustificationByID(id int) (*model.Me
 		j.Reason = reason.String
 	} else {
 		j.Reason = ""
+	}
+
+	return &j, nil
+}
+
+func (r *MedicalJustificationRepository) GetJustificationForDate(parentID string, childName string) (*model.MedicalJustification, error) {
+
+	query := `
+		SELECT id, child_name, doctor_id, parent_id, valid_from, valid_to, reason
+		FROM medical_justifications
+		WHERE parent_id = ?
+		  AND child_name = ?
+		  AND ? BETWEEN valid_from AND valid_to
+		LIMIT 1
+	`
+
+	var j model.MedicalJustification
+
+	err := r.DB.QueryRow(query, parentID, childName, time.Now()).Scan(&j.ID, &j.ParentID, &j.DoctorID, &j.ChildName, &j.ValidFrom, &j.ValidTo, &j.Reason)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
 	}
 
 	return &j, nil

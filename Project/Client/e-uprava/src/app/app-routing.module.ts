@@ -7,6 +7,7 @@ import {AppointmentsComponent} from './appointments/appointments/appointments.co
 import {MedJustificationComponent} from './med-justification/med-justification/med-justification.component';
 import {EnrollmentComponent} from './enrollment/enrollment.component';
 import {StatisticsComponent} from './statistics/statistics.component';
+import {NotificationsComponent} from './notifications/notifications.component';
 
 
 export const routes: Routes = [
@@ -17,7 +18,8 @@ export const routes: Routes = [
   { path: 'appointments', component: AppointmentsComponent },
   { path: 'medicalJustification', component: MedJustificationComponent },
   { path: 'enrollment', component: EnrollmentComponent },
-  { path: 'statistics/:childName', component: StatisticsComponent }
+  { path: 'statistics/:childName', component: StatisticsComponent },
+  { path: 'notifications', component: NotificationsComponent },
 ];
 
 

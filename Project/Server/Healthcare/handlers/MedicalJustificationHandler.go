@@ -151,3 +151,24 @@ func (h *MedicalJustificationHandler) DownloadJustificationPDF(w http.ResponseWr
 		log.Println("Failed to write PDF to response:", err)
 	}
 }
+
+func (h *MedicalJustificationHandler) CheckJustificationForDate(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	parentID := vars["parentId"]
+	log.Println("Received parent id:", parentID)
+	child := vars["child"]
+	log.Println("Received child name:", child)
+
+	j, err := h.Repo.GetJustificationForDate(parentID, child)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if j == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	json.NewEncoder(w).Encode(j)
+}

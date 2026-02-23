@@ -61,6 +61,12 @@ func main() {
 	}
 	childrenHandler := handlers.NewChildrenHandler(childrenRepo)
 
+	notifRepo := repository.NewNotificationRepository(db)
+	if err := notifRepo.EnsureTableExists(); err != nil {
+		log.Fatal("Cannot create notifications table:", err)
+	}
+	notifHandler := handlers.NewNotificationHandler(notifRepo)
+
 	r := mux.NewRouter()
 
 	//http.Handle("/parents", enableCORS(http.HandlerFunc(userHandler.GetParents)))
@@ -88,6 +94,11 @@ func main() {
 	r.HandleFunc("/children/getByParentID/{id}", childrenHandler.GetByParentID).Methods("GET")
 	r.HandleFunc("/children/getAll", childrenHandler.GetAll).Methods("GET")
 	r.HandleFunc("/child/status/childName/{childName}/parentId/{parentId}", childrenHandler.GetChildsEnrollmentStatus).Methods("GET")
+
+	r.HandleFunc("/ws", handlers.HandleWebSocket)
+	r.HandleFunc("/notifications/{userId}", notifHandler.GetNotifications).Methods("GET")
+	r.HandleFunc("/notifications/read/{userId}", notifHandler.MarkAsRead).Methods("PUT")
+	r.HandleFunc("/notifications", notifHandler.CreateNotification).Methods("POST")
 
 	//http.Handle("/attendance", enableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	//	switch r.Method {

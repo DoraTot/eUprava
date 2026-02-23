@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
 	"main.go/repository"
+	ws "main.go/websocket"
 	"net/http"
 	"strings"
 	"time"
@@ -87,23 +89,38 @@ func (h *AttendanceHandler) PickUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := h.Repo.PickUp(req.Parent, req.ChildName, req.Date, true)
+	att, err := h.Repo.PickUp(req.Parent, req.ChildName, req.Date, true)
 	if err != nil {
 		log.Println("Failed to insert attendance:", err)
 		http.Error(w, "Failed to insert record", http.StatusInternalServerError)
 		return
 	}
-	if rows == 0 {
-		log.Printf("No attendance record found for parent='%s', child='%s', date='%v'",
-			req.Parent, req.ChildName, req.Date)
-		http.Error(w, "No attendance record found for given parent and date", http.StatusNotFound)
-		return
+
+	message := att.Child + " was picked up from preschool at " + att.Date
+
+	log.Println("Sending notification to parent:", att.Parent, "Message:", message)
+
+	ws.SendNotification(att.Parent, message)
+	log.Println("Notification sent successfully to parent:", att.Parent)
+	notification := map[string]interface{}{
+		"user_id": att.Parent,
+		"message": message,
+	}
+
+	jsonData, _ := json.Marshal(notification)
+
+	resp, err := http.Post("http://app:8080/notifications",
+		"application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println("Failed to send notification to preschool service:", err)
+	} else {
+		defer resp.Body.Close()
+		log.Println("Notification sent to preschool service, status:", resp.Status)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "Picked up status updated",
-		"updated": rows,
 	})
 
 }
@@ -138,6 +155,27 @@ func (h *AttendanceHandler) PostRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Missing {
+		healthcareURL := "http://healthcare:8081/checkJustificationForDate/" +
+			req.Parent + "/" + req.Child
+
+		resp, err := http.Get(healthcareURL)
+		if err != nil {
+			http.Error(w, "Failed to contact healthcare service", http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			req.Justified = true
+		} else if resp.StatusCode == http.StatusNotFound {
+			req.Justified = false
+		} else {
+			http.Error(w, "Healthcare service error", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	recordID, err := h.Repo.InsertAttendance(req.Child, req.Parent, dateTime, req.Missing, false, req.Justified)
 	if err != nil {
 		if strings.Contains(err.Error(), "already exists") {
@@ -147,6 +185,42 @@ func (h *AttendanceHandler) PostRecord(w http.ResponseWriter, r *http.Request) {
 		log.Println("Failed to insert attendance:", err)
 		http.Error(w, "Failed to insert record", http.StatusInternalServerError)
 		return
+	}
+
+	att, err := h.Repo.GetByID(recordID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if att.Missing {
+		message := ""
+		if att.Justified {
+			message = "Your child " + att.Child + " was absent from preschool today, their absence is justified with a valid medical justification."
+
+		} else {
+			message = "Your child " + att.Child + " was absent from preschool today, please provide medical justification."
+		}
+
+		log.Println("Sending notification to parent:", att.Parent, "Message:", message)
+
+		ws.SendNotification(att.Parent, message)
+		log.Println("Notification sent successfully to parent:", att.Parent)
+		notification := map[string]interface{}{
+			"user_id": att.Parent,
+			"message": message,
+		}
+
+		jsonData, _ := json.Marshal(notification)
+
+		resp, err := http.Post("http://localhost:8080/notifications",
+			"application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			log.Println("Failed to send notification to preschool service:", err)
+		} else {
+			defer resp.Body.Close()
+			log.Println("Notification sent to preschool service, status:", resp.Status)
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

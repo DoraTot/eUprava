@@ -15,6 +15,7 @@ import { HeaderComponent } from './header/header/header.component';
 import { SystematicExamComponent } from './systematic-exam/systematic-exam.component';
 import { EnrollmentComponent } from './enrollment/enrollment.component';
 import { StatisticsComponent } from './statistics/statistics.component';
+import { NotificationsComponent } from './notifications/notifications.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +28,8 @@ import { StatisticsComponent } from './statistics/statistics.component';
     HeaderComponent,
     SystematicExamComponent,
     EnrollmentComponent,
-    StatisticsComponent
+    StatisticsComponent,
+    NotificationsComponent
   ],
   imports: [
     BrowserModule,

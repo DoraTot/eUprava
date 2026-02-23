@@ -104,9 +104,10 @@ export class AttemdanceRecordComponent implements OnInit {
   }
 
   fetchChildren() {
-    this.http.get<any[]>(`http://localhost:8080/children/getAll`).subscribe(data => {
-      this.children = data;
-    });
+    this.http.get<any[]>(`http://localhost:8080/children/getAll`)
+      .subscribe(data => {
+        this.children = data.filter(child => child.enrolled === 'ENROLLED');
+      });
   }
   loadMedicalRecords(userId: string) {
 

@@ -7,7 +7,9 @@ import (
 	"log"
 	"main.go/model"
 	"main.go/repository"
+	ws "main.go/websocket"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -140,7 +142,41 @@ func (h *AppointmentHandler) CancelAppointment(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err := h.Repo.DeleteAppointment(appointmentID)
+	idInt, err := strconv.Atoi(appointmentID)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	app, err := h.Repo.GetAppointmentByID(idInt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	message := "Parent of " + app.ChildName + " cancelled their appointment."
+
+	log.Println("Sending notification to doctor:", app.DoctorID, "Message:", message)
+
+	ws.SendNotification(app.DoctorID, message)
+	log.Println("Notification sent successfully to doctor:", app.DoctorID)
+	notification := map[string]interface{}{
+		"user_id": app.DoctorID,
+		"message": message,
+	}
+
+	jsonData, _ := json.Marshal(notification)
+
+	resp, err := http.Post("http://app:8080/notifications",
+		"application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println("Failed to send notification to preschool service:", err)
+	} else {
+		defer resp.Body.Close()
+		log.Println("Notification sent to preschool service, status:", resp.Status)
+	}
+
+	err = h.Repo.DeleteAppointment(appointmentID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -151,6 +187,59 @@ func (h *AppointmentHandler) CancelAppointment(w http.ResponseWriter, r *http.Re
 }
 
 func (h *AppointmentHandler) JustifyAppointment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	appointmentID := vars["id"]
+	if appointmentID == "" {
+		http.Error(w, "Missing appointment ID", http.StatusBadRequest)
+		return
+	}
+
+	err := h.Repo.SetAppointmentJustified(appointmentID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	idInt, err := strconv.Atoi(appointmentID)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	app, err := h.Repo.GetAppointmentByID(idInt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	message := "The medical justification has been successfully delivered to the preschool your child " +
+		app.ChildName +
+		" attends. Their absence is justified for the duration of the medical justification validity period."
+	log.Println("Sending notification to parent:", app.ParentID, "Message:", message)
+
+	ws.SendNotification(app.ParentID, message)
+	log.Println("Notification sent successfully to parent:", app.ParentID)
+	notification := map[string]interface{}{
+		"user_id": app.ParentID,
+		"message": message,
+	}
+
+	jsonData, _ := json.Marshal(notification)
+
+	resp, err := http.Post("http://app:8080/notifications",
+		"application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println("Failed to send notification to preschool service:", err)
+	} else {
+		defer resp.Body.Close()
+		log.Println("Notification sent to preschool service, status:", resp.Status)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "justified"})
+}
+
+func (h *AppointmentHandler) JustifyAppointmentWithoutNotif(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	appointmentID := vars["id"]
 	if appointmentID == "" {

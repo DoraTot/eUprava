@@ -76,6 +76,7 @@ func main() {
 	r.Handle("/getJustificationsForDoctor/{id}", http.HandlerFunc(medicalJustificationHandler.GetJustificationsForDoctor)).Methods("GET")
 	r.Handle("/downloadJustificationPDF/{id}", http.HandlerFunc(medicalJustificationHandler.DownloadJustificationPDF)).Methods("GET")
 	r.Handle("/createJustification", http.HandlerFunc(medicalJustificationHandler.CreateJustification)).Methods("POST")
+	r.Handle("/checkJustificationForDate/{parentId}/{child}", http.HandlerFunc(medicalJustificationHandler.CheckJustificationForDate)).Methods("GET")
 	go startDailyExpirationCheck(sysExamRepo, sysExamHandler)
 
 	// ---- Appointment routes ----
@@ -86,7 +87,10 @@ func main() {
 	r.Handle("/getAppointmentsByDoctor", http.HandlerFunc(appointmentHandler.GetAppointmentsByDoctor)).Methods("GET")
 	r.HandleFunc("/cancelAppointment/{id}", appointmentHandler.CancelAppointment).Methods("DELETE")
 	r.HandleFunc("/justifyAppointment/{id}", appointmentHandler.JustifyAppointment).Methods("PUT")
+	r.HandleFunc("/justifyAppointmentWithoutNotif/{id}", appointmentHandler.JustifyAppointmentWithoutNotif).Methods("PUT")
 	r.HandleFunc("/getChildStats/{childName}", appointmentHandler.GetChildStats).Methods("GET")
+
+	r.HandleFunc("/ws", handler.HandleWebSocket)
 
 	//r.Handle("/medicalRecord/user/{userId}", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustificationsForParent))).Methods("GET")
 	//r.Handle("/getJustification", enableCORS(http.HandlerFunc(medicalJustificationHandler.GetJustifications))).Methods("GET")

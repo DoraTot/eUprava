@@ -135,7 +135,7 @@ func (r *AppointmentRepository) SetAppointmentJustified(id string) error {
 	return err
 }
 
-func (r *AppointmentRepository) GetAppointmentByID(id string) (*model.Appointment, error) {
+func (r *AppointmentRepository) GetAppointmentByID(id int) (*model.Appointment, error) {
 	query := `
 		SELECT id, child_name, parent_id, doctor_id, date_time, notes, justified, sys_exam
 		FROM appointments

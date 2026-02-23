@@ -2,28 +2,44 @@
   <div class="container-fluid">
     <a class="navbar-brand fw-bold" style="color: #144B4B" routerLink="/home">eUprava</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
+
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" *ngIf="role != 'Doctor'" routerLink="/enrollment" routerLinkActive="active">Enrollment</a>
+          <a class="nav-link" *ngIf="role != 'Doctor'" routerLink="/enrollment">Enrollment</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" *ngIf="role != 'Doctor'" routerLink="/attendance" routerLinkActive="active">Attendance</a>
+          <a class="nav-link" *ngIf="role != 'Doctor'" routerLink="/attendance">Attendance</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/medicalJustification" routerLinkActive="active">Medical Justifications</a>
+          <a class="nav-link" routerLink="/medicalJustification">Medical Justifications</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" *ngIf="role != 'Educator'" routerLink="/appointments" routerLinkActive="active">Appointments</a>
+          <a class="nav-link" *ngIf="role != 'Educator'" routerLink="/appointments">Appointments</a>
         </li>
       </ul>
 
-      <button class="btn btn-outline-danger" (click)="logout()">Log Out</button>
+      <div class="d-flex align-items-center gap-3">
+
+        <a class="nav-link position-relative p-0" routerLink="/notifications">
+          <i class="bi bi-bell" style="font-size: 1.3rem;"></i>
+          <span *ngIf="notificationsCount > 0"
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ notificationsCount }}
+          </span>
+        </a>
+
+        <button class="btn btn-outline-danger btn-sm" (click)="logout()">
+          Log Out
+        </button>
+
+      </div>
+
     </div>
   </div>
 </nav>
